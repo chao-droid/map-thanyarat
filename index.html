@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>แผนที่ 3 มิติ โรงเรียนธัญรัตน์ — งานแข่งขันหุ่นยนต์และคอมพิวเตอร์</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1f2a37;--muted:#64748b;--line:#e2e8f0;--bg:#f6f8fb;--accent:#ff6a00;--comp:#c8f56e;--class:#a8e4b4;--dome:#fff08a;--wc:#5fe0e6;--reg:#e53935}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:'Sarabun',system-ui,sans-serif;color:var(--ink);background:var(--bg);overflow:hidden}
+#app{display:grid;grid-template-columns:1fr 390px;height:100%}
+#scene{position:relative;overflow:hidden;background:linear-gradient(#e3eef8,#f3f6f0)}
+#scene canvas{display:block;touch-action:none}
+.labels{position:absolute;inset:0;pointer-events:none}
+.lbl{pointer-events:auto;cursor:pointer;background:#fff;border:2px solid var(--ink);border-radius:999px;padding:1px 10px;font-weight:800;font-size:15px;line-height:1.35;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.18);transition:opacity .25s,transform .15s;user-select:none}
+.lbl:hover{transform:scale(1.08)}
+.lbl.comp{background:var(--comp)}
+.lbl.dome{background:var(--dome)}
+.lbl.small{font-size:11px;font-weight:600;padding:0 7px;border-width:1px;background:#e6fbfc;cursor:default}
+.lbl.reg{background:var(--reg);color:#fff;border-color:#8e1b1b;font-size:13px}
+.lbl.gate{background:var(--ink);color:#fff;font-size:12px;cursor:default}
+.lbl.flag{font-size:11px;font-weight:600;border-width:1px;cursor:default}
+.lbl.dim{opacity:.25}
+.labels.nolbl .lbl:not(.sel){display:none}
+.lbl.sel{background:var(--accent);color:#fff;border-color:#9a3c00}
+#title{position:absolute;left:16px;top:14px;pointer-events:none;display:flex;align-items:center;gap:10px}
+#emblem{width:54px;height:54px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+#title h1{margin:0;font-size:22px;font-weight:800;text-shadow:0 1px 0 #fff}
+#title p{margin:0;font-size:14px;color:var(--muted);font-weight:600}
+#tools{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:6px}
+#tools button{font:inherit;font-size:13px;font-weight:600;background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 10px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.1);text-align:left}
+#tools button.on{background:var(--ink);color:#fff}
+#legend{position:absolute;left:14px;bottom:14px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:12.5px;display:grid;grid-template-columns:auto auto;gap:4px 14px}
+#legend span{display:flex;align-items:center;gap:6px}
+#legend i{width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.35);display:inline-block}
+#hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:rgba(31,42,55,.85);color:#fff;font-size:13px;padding:6px 14px;border-radius:999px;transition:opacity .6s;pointer-events:none;white-space:nowrap}
+#panel{background:#fff;border-left:1px solid var(--line);overflow-y:auto;padding:16px 18px 30px}
+.tabs{display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:12px;margin-bottom:12px;position:sticky;top:-16px;z-index:2}
+.tabs button{flex:1;font:inherit;font-weight:700;font-size:15px;border:0;background:none;padding:8px;border-radius:9px;cursor:pointer;color:var(--muted)}
+.tabs button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+h3.grp{font-size:13px;letter-spacing:.3px;color:var(--muted);margin:16px 0 6px;font-weight:700}
+.evt{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.evt>i{flex:0 0 12px;height:12px;border-radius:3px;margin-top:6px;border:1px solid rgba(0,0,0,.3)}
+.evt b{font-size:15.5px;display:block;line-height:1.35}
+.spots{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.spots button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:3px 10px;cursor:pointer}
+.spots button:hover{border-color:var(--accent);color:var(--accent)}
+.spots button em{font-style:normal;color:var(--muted)}
+.bitem{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+.bitem:hover{border-color:var(--accent)}
+.num{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;padding:0 8px;border-radius:999px;border:2px solid var(--ink);font-weight:800;background:var(--class)}
+.num.comp{background:var(--comp)}.num.dome{background:var(--dome)}
+.bitem small{display:block;color:var(--muted);font-size:13px}
+.back{font:inherit;font-weight:600;border:0;background:none;color:var(--muted);cursor:pointer;padding:0;margin-bottom:8px}
+.bhead{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.bhead h2{margin:0;font-size:22px}
+.bhead small{display:block;color:var(--muted);font-size:14px;font-weight:600}
+.floors{display:flex;flex-direction:column;gap:6px;margin:14px 0}
+.floor{display:flex;gap:12px;align-items:center;text-align:left;font:inherit;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;cursor:pointer}
+.floor b{min-width:44px}
+.floor span{font-size:14.5px}
+.floor.has{background:#f4fde4;border-color:#b9e27a}
+.floor.has span{font-weight:700}
+.floor.plain span{color:var(--ink)}
+.floor.none span{color:#a0aab8}
+.floor.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.floor.on span{color:#fff}
+.floor .go{margin-left:auto;font-size:12px;opacity:.75}
+.plan-wrap h4{margin:6px 0 6px;font-size:16px}
+svg.plan{width:100%;height:auto;background:#fff;border-radius:8px}
+svg.plan text{text-anchor:middle;dominant-baseline:central;font-family:'Sarabun',sans-serif;font-weight:700;fill:#1f2a37;pointer-events:none}
+svg.plan .room rect{stroke:#1f2a37;stroke-width:1.5}
+svg.plan .room.ghost rect{stroke:#cbd5e1;stroke-dasharray:3 3}
+svg.plan .room.ghost text{fill:#94a3b8;font-weight:600}
+svg.plan .room.ev{cursor:pointer}
+svg.plan .room.ev:hover rect{filter:brightness(.93)}
+svg.plan .room.active rect{stroke:var(--accent);stroke-width:6;stroke-dasharray:none;animation:pulse 1.2s ease-in-out infinite}
+svg.plan .note{fill:#94a3b8;font-weight:600}
+svg.plan text.t2{font-weight:600;fill:#475569}
+@keyframes pulse{50%{stroke-opacity:.35}}
+.tip{font-size:13px;color:var(--muted);margin:6px 0}
+.detail{margin-top:10px;border-radius:12px;padding:10px 12px;background:var(--bg);border-left:6px solid var(--accent);font-size:15px;display:none}
+.detail.show{display:block}
+.detail small{display:block;color:var(--muted);font-size:13px}
+.intro{font-size:14px;color:var(--muted);margin:0 0 4px}
+@media (max-width:760px){
+  #app{grid-template-columns:1fr;grid-template-rows:1fr 46%}
+  #panel{border-left:0;border-top:1px solid var(--line);padding:12px 14px 24px}
+  #title h1{font-size:16px}#title p{font-size:12px}
+  #emblem{width:38px;height:38px}
+  #legend{display:none}
+  #tools{flex-direction:row;top:auto;bottom:10px;right:10px}
+  #tools span{display:none}
+  #tools button{font-size:17px;padding:4px 10px}
+  #hint{display:none}
+  .lbl{font-size:12px;padding:0 7px}
+  .lbl.small,.lbl.flag{display:none}
+}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="app">
+  <div id="scene">
+    <div id="title"><img id="emblem" alt="ตราโรงเรียนธัญรัตน์"><div><h1>แผนที่ 3 มิติ โรงเรียนธัญรัตน์</h1><p>งานแข่งขันหุ่นยนต์และคอมพิวเตอร์</p></div></div>
+    <div id="tools">
+      <button data-view="home">⟲<span> มุมเริ่มต้น</span></button>
+      <button data-view="top">⬒<span> มองจากด้านบน</span></button>
+      <button data-view="labels" id="lblBtn">#<span> ซ่อนป้ายตัวเลข</span></button>
+      <button data-view="roof" id="roofBtn">⌂<span> ซ่อนหลังคาโดม/โรงยิม</span></button>
+      <button data-view="spin" id="spinBtn">↻<span> หมุนอัตโนมัติ</span></button>
+    </div>
+    <div id="legend">
+      <span><i style="background:var(--comp)"></i>อาคารแข่งขัน</span>
+      <span><i style="background:var(--class)"></i>อาคารเรียน</span>
+      <span><i style="background:var(--dome)"></i>โดมอเนกประสงค์</span>
+      <span><i style="background:var(--wc)"></i>ห้องน้ำ</span>
+      <span><i style="background:var(--reg);border-radius:50%"></i>จุดลงทะเบียน</span>
+      <span><i style="background:var(--accent)"></i>ชั้นที่เลือก</span>
+    </div>
+    <div id="hint">ลากเพื่อหมุน • ล้อเมาส์หรือสองนิ้วเพื่อซูม • แตะอาคารเพื่อดูรายละเอียด</div>
+  </div>
+  <aside id="panel"></aside>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {CSS2DRenderer, CSS2DObject} from 'three/addons/renderers/CSS2DRenderer.js';
+
+/* ================= ข้อมูล (แก้ไขได้) ================= */
+const EMBLEM_SRC = 'data:image/jpeg;base64,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';
+document.getElementById('emblem').src = EMBLEM_SRC;
+// พิกัดอ้างอิงจากแผนผังโรงเรียน (หน่วยพิกเซลของภาพผัง) — S = เมตรต่อพิกเซล
+const S = 0.35, CX = 908, CY = 345, FH = 3.6;
+const G='#c8f56e', Y='#fff38a', CYN='#5fe0e6', P='#e2aaf0', R='#ff8e8e';
+const KIND = {comp:'#c8f56e', class:'#a8e4b4', dome:'#fff08a', wc:'#6fe0e6'};
+
+// floors = จำนวนชั้น (ประมาณการ แก้ได้), info = กิจกรรมแต่ละชั้น, plan = ผังห้อง
+const DEFS = [
+  {id:'1', name:'อาคาร 1', sub:'อาคารเรียนแบบ 318 ล./30 · 18 ห้องเรียน', parts:[[905,320,1100,363]], floors:4, kind:'class', custom:'b1', th:.35, zoom:.62,
+    info:{1:{t:'ธนาคาร · บริหารทั่วไป · ใต้ถุนโล่ง', plan:'b1f1', plain:1}, 2:{t:'สำนักงาน ผอ. การเงิน วิชาการ ทะเบียน สารบรรณ พัสดุ', plan:'b1f2', plain:1}, 3:{t:'ห้องเรียน 131–135 · ภาษาไทย', plan:'b1f3', plain:1}, 4:{t:'ห้องเรียน 141–146', plan:'b1f4', plain:1}}},
+  {id:'2', name:'อาคาร 2', sub:'อาคารเรียนแบบพิเศษ 4 ชั้น · ห้องเรียนจริง 14 ห้อง', parts:[[868,130,1035,160],[1002,160,1035,228]], floors:4, kind:'class', custom:'corr', fronts:['s','w'], style:'b2', th:-.2, zoom:.85, labelAt:[990,130,1035,160],
+    info:{1:{t:'ห้องราชพฤกษ์ · ศูนย์โสตฯ · ห้องพยาบาล', plan:'b2f1', plain:1}, 2:{t:'ห้อง 222–225 · ญี่ปุ่น · แนะแนว', plan:'b2f2', plain:1}, 3:{t:'ห้อง 231–236', plan:'b2f3', plain:1}, 4:{t:'ห้อง 241–246', plan:'b2f4', plain:1}}},
+  {id:'3', name:'อาคาร 3', sub:'อาคารเรียนแบบ 318 ล./30 · 18 ห้องเรียน', parts:[[708,130,868,160]], floors:4, kind:'comp', custom:'corr', fronts:['s'], style:'b3', th:.25,
+    info:{1:{t:'ห้องวิทย์ 311–313 · พักครูวิทยาศาสตร์', plan:'b3f1', plain:1}, 2:{t:'ห้องวิทย์ 321–324', plan:'b3f2', plain:1}, 3:{t:'ห้องพักผู้แข่งขันหุ่นยนต์ (331–335)', plan:'b3f3'}}},
+  {id:'4', name:'อาคาร 4', sub:'อาคารเรียนแบบ 418 ค · 18 ห้องเรียน', parts:[[693,310,862,335]], floors:4, kind:'class', custom:'corr', fronts:['n'], style:'b4', th:3.0,
+    info:{1:{t:'ดนตรีสากล · สหกรณ์ · ใต้ถุนโล่ง', plan:'b4f1', plain:1}, 2:{t:'ห้องเรียน 421–425 · พักครูสังคม', plan:'b4f2', plain:1}, 3:{t:'ห้องเรียน 431–435 · พักครูสังคม', plan:'b4f3', plain:1}, 4:{t:'ห้องเรียน 441–445 · จริยธรรม', plan:'b4f4', plain:1}}},
+  {id:'5', name:'อาคาร 5', sub:'อาคารกาญจนาภิเษก · ห้องประชุมกาญจนาภิเษก ชั้น 3', parts:[[693,168,747,300]], floors:9, kind:'comp', custom:'b5', th:1.35, zoom:1.1,
+    info:{3:{t:'แข่งขันหุ่นยนต์ (ห้องประชุมกาญจนาภิเษก)', plan:'b5f3'}, 4:{t:'ห้อง 541–544', plan:'b5f4', plain:1}, 5:{t:'ห้อง 551–554', plan:'b5f5', plain:1}, 6:{t:'ห้อง 561–564', plan:'b5f6', plain:1}, 7:{t:'ห้อง 571–574', plan:'b5f7', plain:1}, 8:{t:'ห้อง 581–584', plan:'b5f8', plain:1}, 9:{t:'ห้อง 591–594', plan:'b5f9', plain:1}}},
+  {id:'6', name:'อาคาร 6', parts:[[908,400,949,515]], floors:5, kind:'comp', custom:'b6', front:'east', th:1.2,
+    info:{1:{t:'จุดรับลงทะเบียน (โถงใต้อาคาร)', plan:'b6f1'}, 2:{t:'แข่งขันโครงงาน', plan:'b6f2'}, 3:{t:'ห้องเรียน 631–6310', plan:'b6f3', plain:1}, 4:{t:'ห้องเรียน 641–6410', plan:'b6f4', plain:1}, 5:{t:'แข่งขันทักษะวิชาการคอมพิวเตอร์', plan:'b6f5'}}},
+  {id:'7', name:'อาคาร 7', sub:'อาคารเรียนแบบ สปช. 2/28 · 4 ชั้น 12 ห้องเรียน', parts:[[1008,252,1100,295]], floors:4, kind:'class', custom:'corr', fronts:['n'], style:'b7', th:2.7,
+    info:{1:{t:'ห้องพักครู · ใต้ถุนโล่ง', plan:'b7f1', plain:1}, 2:{t:'ห้องเรียน 721–724', plan:'b7f2', plain:1}, 3:{t:'ห้องเรียน 731–734', plan:'b7f3', plain:1}, 4:{t:'ห้องเรียน 741–744', plan:'b7f4', plain:1}}},
+  {id:'8', sub:'อาคารโรงฝึกงานแบบ 102/27', name:'อาคาร 8-1', label:'8-1', parts:[[1048,194,1105,220]], floors:1, fh:5, kind:'class', custom:'hall', th:.4},
+  {id:'8c', sub:'อาคารโรงฝึกงานแบบ 102/27', name:'อาคาร 8-2', label:'8-2', parts:[[1048,158,1105,184]], floors:1, fh:5, kind:'class', custom:'hall', th:.4},
+  {id:'8d', sub:'อาคารโรงฝึกงานแบบ 102/27', name:'อาคาร 8-3', label:'8-3', parts:[[1048,122,1105,148]], floors:1, fh:5, kind:'class', custom:'hall', th:.4},
+  {id:'9', name:'อาคาร 9', parts:[[868,540,949,563]], floors:2, kind:'class', roof:'gable', roofC:'#c0503c'},
+  {id:'gym', name:'โรงยิม', sub:'อาคารอเนกประสงค์ แบบพิเศษ (อาคารอเนกประสงค์พลศึกษา)', label:'โรงยิม', parts:[[743,342,862,385]], floors:2, fh:4.5,
+    info:{1:{t:'ลานจอดรถใต้อาคาร (2 แถว)'}, 2:{t:'สนามบาสเกตบอล 2 สนาม'}}, kind:'class', custom:'gym', th:1.1, zoom:.8},
+  {id:'dome', name:'อาคารโดม', sub:'โดมอเนกประสงค์', label:'โดม', parts:[[750,175,937,295]], floors:1, fh:13, kind:'dome', roof:'arch', flat:.3, custom:'dome',
+    pinGround:1, info:{1:{t:'Drone Mission (D1) · จุดพักคอย ครูผู้ฝึกซ้อม', plan:'domef1'}}},
+];
+const TOILETS = [[795,100,848,123],[853,100,906,123],[693,345,735,367]];
+
+const PLANS = {
+  b6f2:{w:368,h:504,fs:16,rooms:[
+    {id:'wc1',t:'ห้องน้ำ',x:6,y:7,w:122,h:40},
+    {id:'st1',t:'บันได',x:240,y:7,w:122,h:40,ghost:1},
+    {id:'lib',t:'ห้องบรรณารักษ์',x:6,y:56,w:64,h:56},
+    {id:'book',t:'โซนหนังสือ',x:6,y:118,w:122,h:252,dash:1,ty:290},
+    {id:'p13',t:'ม.1–3',x:10,y:122,w:114,h:84,fill:G,dash:1,ev:'การประกวดโครงงาน ฯ (ม.1–3) — โซนหนังสือ'},
+    {id:'p46',t:'ม.4–6',x:134,y:214,w:46,h:162,fill:G,dash:1,rot:1,ev:'การประกวดโครงงาน ฯ (ม.4–6) — โถงทางเดิน'},
+    {id:'glass',t:'ห้องกระจก',x:6,y:378,w:122,h:64},
+    {id:'honor',t:'มุมเฉลิมพระเกียรติ',x:240,y:56,w:122,h:56,dash:1},
+    {id:'tr',t:'ห้องพักครู',x:240,y:120,w:122,h:92},
+    {id:'theater',t:'ห้องเธียเตอร์',x:240,y:220,w:122,h:224,fill:Y,ev:'จุดพักคอย ผู้เข้าแข่งขัน'},
+    {id:'wc2',t:'ห้องน้ำ',x:6,y:452,w:122,h:46},
+    {id:'st2',t:'บันได',x:240,y:452,w:122,h:46,ghost:1}],
+    notes:[{t:'ทางเดิน',x:208,y:130,rot:1}]},
+  b6f5:{w:362,h:504,fs:16,rooms:[
+    {id:'wc1',t:'ห้องน้ำ',x:5,y:7,w:122,h:47},
+    {id:'st1',t:'บันได',x:235,y:7,w:122,h:47,ghost:1},
+    {id:'655',t:'655',x:5,y:64,w:122,h:90,fill:Y,ev:'การแข่งขันการสร้างการ์ตูน ฯ (ม.1–3) ลำดับที่ 1–13'},
+    {id:'656',t:'656',x:5,y:164,w:122,h:90,fill:Y,ev:'การแข่งขันการสร้างการ์ตูน ฯ (ม.1–3) ลำดับที่ 14–26'},
+    {id:'tr1',t:'ห้องพักครู',x:5,y:264,w:122,h:84},
+    {id:'658',t:'658',x:5,y:356,w:122,h:90,fill:P,ev:'การแข่งขันการออกแบบสิ่งของ ฯ (ม.4–6) ลำดับที่ 15–28'},
+    {id:'wc2',t:'ห้องน้ำ',x:5,y:452,w:122,h:46},
+    {id:'651',t:'651',x:235,y:64,w:122,h:96,fill:G,ev:'การแข่งขันการออกแบบสิ่งของ ฯ (ม.1–3) ลำดับที่ 1–12'},
+    {id:'652',t:'652',x:235,y:170,w:122,h:90,fill:P,ev:'การแข่งขันการออกแบบสิ่งของ ฯ (ม.4–6) ลำดับที่ 1–14'},
+    {id:'tr2',t:'ห้องพักครู',x:235,y:268,w:122,h:86},
+    {id:'654',t:'654',x:235,y:362,w:122,h:84,fill:G,ev:'การแข่งขันการออกแบบสิ่งของ ฯ (ม.1–3) ลำดับที่ 13–24'},
+    {id:'st2',t:'บันได',x:235,y:452,w:122,h:46,ghost:1}],
+    notes:[{t:'ทางเดิน',x:181,y:252,rot:1}]},
+  b6f1:{w:372,h:510,fs:18,rooms:[
+    {id:'wc1',t:'ห้องน้ำ',x:5,y:7,w:124,h:41},
+    {id:'st1',t:'บันได',x:248,y:7,w:118,h:41,ghost:1},
+    {id:'reg1',t:'โถงใต้อาคาร',t2:'จุดรับลงทะเบียน',x:6,y:69,w:124,h:322,fill:Y,dash:1,ev:'จุดรับลงทะเบียน · โถงใต้อาคาร 6 (ฝั่งตะวันตก)'},
+    {id:'reg2',t:'โถงใต้อาคาร',t2:'จุดรับลงทะเบียน',x:239,y:69,w:110,h:137,fill:Y,dash:1,ev:'จุดรับลงทะเบียน · โถงใต้อาคาร 6 (ฝั่งตะวันออก)'},
+    {id:'stg1',t:'เวที',x:6,y:407,w:124,h:41},
+    {id:'stg2',t:'เวที',x:239,y:407,w:125,h:41},
+    {id:'wc2',t:'ห้องน้ำ',x:5,y:457,w:124,h:46},
+    {id:'st2',t:'บันได',x:248,y:457,w:118,h:46,ghost:1}],
+    notes:[{t:'ประตู ▶',x:330,y:250}]},
+  domef1:{w:560,h:372,fs:22,rooms:[
+    {id:'stage',t:'เวที',x:0,y:66,w:68,h:276},
+    {id:'wt1',t:'จุดพักคอย',x:79,y:48,w:58,h:313,fill:G,dash:1,rot:1,ev:'จุดพักคอย ครูผู้ฝึกซ้อม (ฝั่งเวที)'},
+    {id:'D1',t:'D1',x:187,y:48,w:130,h:313,fill:Y,dash:1,ev:'อากาศยานไร้คนขับทำภารกิจ (Drone Mission) ม.1–6'},
+    {id:'wt2',t:'จุดพักคอย',x:365,y:48,w:58,h:313,fill:G,dash:1,rot:1,ev:'จุดพักคอย ครูผู้ฝึกซ้อม (ฝั่งสระน้ำ)'}],
+    notes:[]},
+  b5f3:{w:366,h:504,fs:16,rooms:[
+    {id:'stage',t:'เวที',x:96,y:0,w:174,h:44},
+    {id:'rm',t:'ห้อง',x:278,y:0,w:88,h:44},
+    {id:'A1',t:'A1',x:10,y:130,w:76,h:64,fill:G,dash:1,ev:'หุ่นยนต์อัตโนมัติขนส่งสินค้า (Robot Athletics) ม.1–3'},
+    {id:'A2',t:'A2',x:10,y:204,w:76,h:64,fill:G,dash:1,ev:'หุ่นยนต์อัตโนมัติขนส่งสินค้า (Robot Athletics) ม.4–6'},
+    {id:'B1',t:'B1',x:10,y:279,w:76,h:64,fill:CYN,dash:1,ev:'หุ่นยนต์บังคับมือ ซ้อมเตะจุดโทษ ม.1–3'},
+    {id:'B2',t:'B2',x:10,y:354,w:76,h:64,fill:CYN,dash:1,ev:'หุ่นยนต์บังคับมือ ซ้อมเตะจุดโทษ ม.4–6'},
+    {id:'C1',t:'C1',x:280,y:130,w:76,h:64,fill:P,dash:1,ev:'หุ่นยนต์บังคับมือแบบล้อ รีโมทมีสาย ม.1–3'},
+    {id:'C2',t:'C2',x:280,y:204,w:76,h:64,fill:P,dash:1,ev:'หุ่นยนต์บังคับมือแบบล้อ รีโมทมีสาย ม.4–6'},
+    {id:'E1',t:'E1',x:280,y:279,w:76,h:64,fill:R,dash:1,ev:'หุ่นยนต์ Sumo 1000 RC ม.1–3'},
+    {id:'E2',t:'E2',x:280,y:354,w:76,h:64,fill:R,dash:1,ev:'หุ่นยนต์ Sumo 1000 RC ม.4–6'},
+    {id:'s1',t:'ห้องเก็บของ',x:4,y:468,w:120,h:30},
+    {id:'s2',t:'ห้องเก็บของ',x:242,y:468,w:120,h:30}],
+    notes:[{t:'▲ ทางเข้า',x:183,y:488}]},
+  b3f3:{w:983,h:239,fs:36,rooms:[
+    {id:'dance',t:'ห้องนาฏศิลป์',x:8,y:9,w:125,h:200},
+    {id:'335',t:'335',x:205,y:9,w:122,h:125,fill:R,ev:'ห้องพักผู้แข่งขัน: หุ่นยนต์ Sumo 1000 RC'},
+    {id:'334',t:'334',x:338,y:9,w:122,h:125,fill:P,ev:'ห้องพักผู้แข่งขัน: หุ่นยนต์บังคับมือแบบล้อ รีโมทมีสาย'},
+    {id:'333',t:'333',x:472,y:9,w:122,h:125,fill:CYN,ev:'ห้องพักผู้แข่งขัน: หุ่นยนต์บังคับมือ ซ้อมเตะจุดโทษ'},
+    {id:'332',t:'332',x:606,y:9,w:122,h:125,fill:G,ev:'ห้องพักผู้แข่งขัน: หุ่นยนต์อัตโนมัติขนส่งสินค้า (Robot Athletics)'},
+    {id:'proj',t:'ห้องโครงงาน',x:740,y:9,w:95,h:125},
+    {id:'331',t:'331',x:847,y:9,w:122,h:125,fill:Y,ev:'ห้องพักผู้แข่งขัน: อากาศยานไร้คนขับทำภารกิจ (Drone Mission)'}],
+    notes:[{t:'◀ ทางเชื่อมอาคาร',x:168,y:120,rot:1},{t:'ทางเดิน',x:590,y:190}]},
+};
+
+// ผังอาคาร 1 (แบบ 318 ล./30) ชั้นละ 6 ห้องเรียน ระเบียงทางเดินด้านหน้า (ทิศใต้)
+function b1Plan(f){
+  const rooms = [{id:'stW',t:'บันได',x:4,y:4,w:56,h:112,ghost:1},{id:'stE',t:'บันได',x:620,y:4,w:56,h:112,ghost:1}];
+  for (let i = 0; i < 6; i++){ const id = `1${f}${i+1}`; rooms.push({id, t:id, x:64+i*92.67, y:4, w:88.67, h:112, fill:'#eaf7ee', ev:`ห้องเรียน ${id}`}); }
+  return {w:680, h:160, fs:24, rooms, notes:[{t:'ระเบียงทางเดิน',x:340,y:139}]};
+}
+
+// ผังอาคาร 7 (แบบ สปช. 2/28) ชั้นละ 4 ห้องเรียน ระเบียงด้านทิศเหนือ
+function b7Plan(f){
+  const rooms = [{id:'stW',t:'บันได',x:4,y:44,w:60,h:112,ghost:1},{id:'stE',t:'บันได',x:616,y:44,w:60,h:112,ghost:1}];
+  for (let i = 0; i < 4; i++){ const id = `7${f}${i+1}`; rooms.push({id, t:id, x:68+i*137, y:44, w:133, h:112, fill:'#eaf7ee', ev:`ห้องเรียน ${id}`}); }
+  return {w:680, h:160, fs:24, rooms, notes:[{t:'ระเบียงทางเดิน',x:340,y:21}]};
+}
+// ผังแถวห้องเรียนทั่วไป (เลขห้อง = เลขอาคาร + ชั้น + ลำดับ เรียงจากตะวันตกไปตะวันออก)
+function rowPlan(b, f, n, corTop){
+  const y = corTop ? 44 : 4, rooms = [{id:'stW',t:'บันได',x:4,y,w:56,h:112,ghost:1},{id:'stE',t:'บันได',x:620,y,w:56,h:112,ghost:1}];
+  const rw = 552/n;
+  for (let i = 0; i < n; i++){ const id = `${b}${f}${i+1}`; rooms.push({id, t:id, x:64+i*rw, y, w:rw-4, h:112, fill:'#eaf7ee', ev:`ห้องเรียน ${id}`}); }
+  return {w:680, h:160, fs:24, rooms, notes:[{t:'ระเบียงทางเดิน',x:340,y:corTop ? 21 : 139}]};
+}
+
+
+
+/* ===== ผังห้องตามแผนผังโรงเรียน ปีการศึกษา 2566 ===== */
+// cell = [ชื่อห้อง, บรรทัดที่สอง, น้ำหนักความกว้าง, ชนิด]  ชนิด: 's' บันได, 'w' ห้องน้ำ, 'o' ห้องอื่น, (ว่าง) ห้องเรียน
+const CLS_FILL = '#eaf7ee', OTH_FILL = '#f6f1e4';
+function evText(t, t2){ return /^\d+\/\d+$/.test(t2||'') ? `ห้อง ${t} · ห้องเรียน ม.${t2}` : (t2 ? `${t} · ${t2}` : t); }
+function cellRoom(c, x, y, w, h, key){
+  const [t, t2, , k] = c;
+  if (k === 's') return {id:key, t:'บันได', x, y, w, h, ghost:1};
+  if (k === 'w') return {id:key, t:t || 'ห้องน้ำ', x, y, w, h, fill:'#dff6f7'};
+  return {id:t, t, t2, x, y, w, h, fill: k === 'o' ? OTH_FILL : CLS_FILL, ev: evText(t, t2)};
+}
+function hplan(cells, corTop, W=680){
+  const tot = cells.reduce((a, c) => a + (c[2] || 1), 0), y = corTop ? 44 : 4, rooms = [];
+  let x = 4; const unit = (W - 8)/tot;
+  cells.forEach((c, i) => { const w = (c[2] || 1)*unit; rooms.push(cellRoom(c, x+1, y, w-2, 112, 'c'+i)); x += w; });
+  return {w:W, h:160, fs:22, rooms, notes:[{t:'ระเบียงทางเดิน', x:W/2, y:corTop ? 21 : 139}]};
+}
+function vplan2(west, east, W=362, H=504){   // สองแถว ทางเดินกลาง (อาคาร 6)
+  const rooms = [], cw = 122;
+  for (const [col, x] of [[west, 5], [east, W-5-cw]]){
+    const tot = col.reduce((a, c) => a + (c[2] || 1), 0), unit = (H - 10)/tot; let y = 5;
+    col.forEach((c, i) => { const h = (c[2] || 1)*unit; rooms.push(cellRoom(c, x, y+1, cw, h-2, (x < W/2 ? 'w' : 'e')+i)); y += h; });
+  }
+  return {w:W, h:H, fs:18, rooms, notes:[{t:'ทางเดิน', x:W/2, y:H/2, rot:1}]};
+}
+function vplan1(cells, W=216, H=528){        // แถวเดียว ห้องเต็มความกว้าง (อาคาร 5)
+  const tot = cells.reduce((a, c) => a + (c[2] || 1), 0), unit = (H - 10)/tot, rooms = []; let y = 5;
+  cells.forEach((c, i) => { const h = (c[2] || 1)*unit; rooms.push(cellRoom(c, 30, y+1, W-36, h-2, 'c'+i)); y += h; });
+  return {w:W, h:H, fs:22, rooms, notes:[{t:'ระเบียง', x:15, y:H/2, rot:1}]};
+}
+const S_ = ['','',.6,'s'], WC = ['ห้องน้ำ','',.6,'w'];
+// อาคาร 1 (ระเบียงทิศใต้)
+PLANS.b1f1 = hplan([S_, ['ธนาคาร','',1,'o'], ['ใต้ถุนโล่ง','',4,'o'], S_, ['บริหารทั่วไป','',1,'o']], 0);
+PLANS.b1f2 = hplan([S_, ['การเงิน','',1,'o'], ['ผอ.','',1,'o'], ['วิชาการ','',1,'o'], ['ทะเบียน','',1,'o'], ['สารบรรณ','',1,'o'], S_, ['พัสดุ','',1,'o']], 0);
+PLANS.b1f3 = hplan([S_, ['131','6/5'], ['132','6/6'], ['133','6/7'], ['134','6/8'], ['135',''], S_, ['ภาษาไทย','',1,'o']], 0);
+PLANS.b1f4 = hplan([S_, ['141','6/9'], ['142','6/10'], ['143','6/11'], ['144','6/12'], ['145','6/13'], S_, ['146','6/14']], 0);
+// อาคาร 7 (ระเบียงทิศเหนือ)
+PLANS.b7f1 = hplan([S_, ['ห้องพักครู','',.6,'o'], ['ใต้ถุนโล่ง','',4,'o'], ['ห้องพักครู','',.6,'o'], S_], 1);
+PLANS.b7f2 = hplan([S_, ['721','1/4'], ['722','1/5'], ['723','1/6'], ['724','1/7'], S_], 1);
+PLANS.b7f3 = hplan([S_, ['731','1/8'], ['732','1/9'], ['733','1/10'], ['734','1/11'], S_], 1);
+PLANS.b7f4 = hplan([S_, ['741','1/12'], ['742','1/13'], ['743','1/14'], ['744','1/15'], S_], 1);
+// อาคาร 4 (ระเบียงทิศเหนือ)
+PLANS.b4f1 = hplan([['ดนตรีสากล','',1.2,'o'], S_, ['สหกรณ์','',1.6,'o'], ['ใต้ถุนโล่ง','',3.2,'o'], S_], 1);
+PLANS.b4f2 = hplan([['พักครูสังคม','',1.2,'o'], S_, ['425','2/15'], ['424','2/14'], ['423','2/13'], ['422','2/12'], ['421','2/11'], S_], 1);
+PLANS.b4f3 = hplan([['พักครูสังคม','',1.2,'o'], S_, ['435','5/3'], ['434','5/2'], ['433','4/14'], ['432','4/13'], ['431','4/12'], S_], 1);
+PLANS.b4f4 = hplan([['จริยธรรม','',1.2,'o'], S_, ['445','6/4'], ['444','6/3'], ['443','6/2'], ['442','5/5'], ['441','5/4'], S_], 1);
+// อาคาร 3 (ระเบียงทิศใต้)
+PLANS.b3f1 = hplan([['พักครูวิทยาศาสตร์','',2.2,'o'], ['313','วิทย์ 3'], ['อุปกรณ์','',.4,'o'], ['312','วิทย์ 2'], ['อุปกรณ์','',.4,'o'], ['311','วิทย์ 1']], 0);
+PLANS.b3f2 = hplan([['พักครู','',.4,'o'], ['324','วิทย์ 7',1.4], ['อุปกรณ์','',.4,'o'], ['323','วิทย์ 6'], ['322','วิทย์ 5'], ['321','วิทย์ 4',1.4], ['อุปกรณ์','',.4,'o']], 0);
+// อาคาร 6 ชั้น 3–4 (ฝั่งตะวันตก | ฝั่งตะวันออก)
+PLANS.b6f3 = vplan2([['ห้องน้ำชาย','',.6,'w'], ['632','1/2'], ['634','5/1'], ['636','1/1'], ['638','3/1'], ['6310','2/1'], ['ห้องน้ำหญิง','',.6,'w']],
+                    [S_, ['631','3/2'], ['633','2/2'], ['635','4/1'], ['637','6/1'], ['639','ห้องพักครู',1,'o'], S_]);
+PLANS.b6f4 = vplan2([['ห้องน้ำชาย','',.6,'w'], ['642','5/7'], ['644','5/9'], ['646','5/11'], ['648','5/13'], ['6410','หุ่นยนต์',1,'o'], ['ห้องน้ำหญิง','',.6,'w']],
+                    [S_, ['641','5/6'], ['643','5/8'], ['645','5/10'], ['647','5/12'], ['649','5/14'], S_]);
+// อาคาร 5 ชั้น 4–9 (เรียงเหนือ → ใต้)
+const B5 = {4:[['544','4/3'],['543','4/2'],['542','ไฮเทค',1,'o'],['541','ศิลปะ',1,'o']], 5:[['554','4/7'],['553','4/6'],['552','4/5'],['551','4/4']],
+  6:[['564','4/11'],['563','4/10'],['562','4/9'],['561','4/8']], 7:[['574','3/7'],['573','3/6'],['572','3/5'],['571','3/4']],
+  8:[['584','3/11'],['583','3/10'],['582','3/9'],['581','3/8']], 9:[['594','3/15'],['593','3/14'],['592','3/13'],['591','3/12']]};
+for (const f in B5) PLANS['b5f'+f] = vplan1([['ห้องน้ำ','',.7,'w'], S_, ...B5[f], S_]);
+// อาคาร 2 รูปตัว L (ปีกเหนือ + ปีกตะวันออก) ขนาดตามกรอบรวม 167×98
+function b2Plan(north, east){
+  const W = 668, H = 392, rooms = [], NW = 536, NY = 4, NH = 74, EX = 594, EW = 70;
+  const tot = north.reduce((a, c) => a + (c[2] || 1), 0); let x = 4; const unit = (W - 8)/tot;
+  north.forEach((c, i) => { const w = (c[2] || 1)*unit; rooms.push(cellRoom(c, x+1, NY, w-2, NH, 'n'+i)); x += w; });
+  const et = east.reduce((a, c) => a + (c[2] || 1), 0), eu = (H - 124)/et; let y = 122;
+  east.forEach((c, i) => { const h = (c[2] || 1)*eu; rooms.push(cellRoom(c, EX, y+1, EW, h-2, 'e'+i)); y += h; });
+  return {w:W, h:H, fs:18, rooms, notes:[{t:'ระเบียงทางเดิน', x:290, y:100}, {t:'ระเบียง', x:560, y:260, rot:1}]};
+}
+PLANS.b2f1 = b2Plan([S_, ['ห้องราชพฤกษ์','',4,'o'], ['ศูนย์โสตฯ','',2,'o'], ['','',1.4,'s']], [['ห้องพยาบาล','',1,'o']]);
+PLANS.b2f2 = b2Plan([S_, ['ญี่ปุ่น','',1,'o'], ['225','โสต ตปท.',1.4], ['224','ตปท.',1.4], ['223','แนะแนว',1.4,'o'], WC, ['','',.8,'s']], [['222','โสต ม.'], ['พักครู','',.6,'o'], ['พักครู','',.6,'o']]);
+PLANS.b2f3 = b2Plan([S_, ['โสต','',.5,'o'], ['236','2/8'], ['235','2/8'], ['234','โสต ตปท.'], ['233','โสต ตปท.'], WC, ['','',.8,'s']], [['232','2/8'], ['231','2/7']]);
+PLANS.b2f4 = b2Plan([S_, ['โสต','',.5,'o'], ['246','2/6'], ['245','2/5'], ['244','2/4'], ['243','1/3'], WC, ['','',.8,'s']], [['242','2/3'], ['241','3/3']]);
+
+const EVENTS = [
+  {g:'แข่งขันหุ่นยนต์ — สนามแข่ง อาคาร 5 ชั้น 3 และอาคารโดม • ห้องพักผู้แข่งขัน อาคาร 3 ชั้น 3', items:[
+    {n:'หุ่นยนต์อัตโนมัติขนส่งสินค้า (Robot Athletics)', c:G, s:[['ม.1–3 · สนาม A1','5',3,'A1'],['ม.4–6 · สนาม A2','5',3,'A2'],['ห้องพัก 332','3',3,'332']]},
+    {n:'หุ่นยนต์บังคับมือ ซ้อมเตะจุดโทษ', c:CYN, s:[['ม.1–3 · สนาม B1','5',3,'B1'],['ม.4–6 · สนาม B2','5',3,'B2'],['ห้องพัก 333','3',3,'333']]},
+    {n:'หุ่นยนต์บังคับมือแบบล้อ รีโมทมีสาย', c:P, s:[['ม.1–3 · สนาม C1','5',3,'C1'],['ม.4–6 · สนาม C2','5',3,'C2'],['ห้องพัก 334','3',3,'334']]},
+    {n:'อากาศยานไร้คนขับทำภารกิจ (Drone Mission)', c:Y, s:[['ม.1–6 · สนาม D1 (อาคารโดม)','dome',1,'D1'],['ห้องพัก 331','3',3,'331']]},
+    {n:'หุ่นยนต์ Sumo 1000 RC', c:R, s:[['ม.1–3 · สนาม E1','5',3,'E1'],['ม.4–6 · สนาม E2','5',3,'E2'],['ห้องพัก 335','3',3,'335']]},
+  ]},
+  {g:'ทักษะวิชาการคอมพิวเตอร์ — อาคาร 6 ชั้น 5', items:[
+    {n:'การแข่งขันการสร้างการ์ตูน ฯ (ม.1–3)', c:Y, s:[['ลำดับ 1–13 · ห้อง 655','6',5,'655'],['ลำดับ 14–26 · ห้อง 656','6',5,'656']]},
+    {n:'การแข่งขันการออกแบบสิ่งของ ฯ (ม.1–3)', c:G, s:[['ลำดับ 1–12 · ห้อง 651','6',5,'651'],['ลำดับ 13–24 · ห้อง 654','6',5,'654']]},
+    {n:'การแข่งขันการออกแบบสิ่งของ ฯ (ม.4–6)', c:P, s:[['ลำดับ 1–14 · ห้อง 652','6',5,'652'],['ลำดับ 15–28 · ห้อง 658','6',5,'658']]},
+  ]},
+  {g:'โครงงาน — อาคาร 6 ชั้น 2', items:[
+    {n:'การประกวดโครงงาน ฯ', c:G, s:[['ม.1–3 · โซนหนังสือ','6',2,'p13'],['ม.4–6 · โถงทางเดิน','6',2,'p46']]},
+  ]},
+  {g:'จุดบริการ', items:[
+    {n:'จุดรับลงทะเบียน', c:'#e53935', s:[['อาคาร 6 ชั้น 1 · โถงใต้อาคาร','6',1,'reg1']]},
+    {n:'จุดพักคอย ครูผู้ฝึกซ้อม', c:G, s:[['อาคารโดม ฝั่งเวที','dome',1,'wt1'],['อาคารโดม ฝั่งสระน้ำ','dome',1,'wt2']]},
+    {n:'ห้องพักผู้แข่งขันหุ่นยนต์', c:Y, s:[['อาคาร 3 ชั้น 3','3',3,null]]},
+    {n:'จุดพักคอย ผู้เข้าแข่งขัน', c:Y, s:[['ห้องเธียเตอร์ อาคาร 6 ชั้น 2','6',2,'theater']]},
+  ]},
+];
+
+/* ================= ฉาก 3 มิติ ================= */
+const px = x => (x - CX) * S, pz = y => (y - CY) * S;
+const wrap = document.getElementById('scene');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#e6eff7');
+scene.fog = new THREE.Fog('#e6eff7', 320, 640);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+wrap.prepend(renderer.domElement);
+const labelR = new CSS2DRenderer();
+labelR.domElement.className = 'labels';
+wrap.insertBefore(labelR.domElement, document.getElementById('title'));
+
+const camera = new THREE.PerspectiveCamera(38, 1, 1, 2000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = .08;
+controls.maxPolarAngle = Math.PI * .47; controls.minDistance = 25; controls.maxDistance = 460;
+controls.screenSpacePanning = false;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0xb9c6a8, 1.1));
+const sun = new THREE.DirectionalLight(0xffffff, 1.9);
+sun.position.set(-90, 170, 110);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, {left:-140, right:140, top:140, bottom:-140, near:10, far:500});
+sun.shadow.bias = -0.0005;
+scene.add(sun);
+
+function facadeTexture(){
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = '#fff'; g.fillRect(0,0,128,128);
+  g.fillStyle = '#8b9db0'; g.fillRect(16,30,96,62);
+  g.fillStyle = '#b8c6d4'; g.fillRect(16,30,96,12);
+  g.fillStyle = '#ffffff'; g.fillRect(62,30,4,62);
+  g.fillStyle = '#dcdcdc'; g.fillRect(0,112,128,16);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
+}
+const TEX = facadeTexture();
+function floorBox(w, h, d){
+  const g = new THREE.BoxGeometry(w, h, d), uv = g.attributes.uv;
+  for (let f = 0; f < 6; f++){
+    const span = f < 2 ? d : (f < 4 ? null : w);
+    for (let i = 0; i < 4; i++){
+      const k = f*4 + i;
+      if (span === null) uv.setXY(k, .05, .97);
+      else uv.setX(k, uv.getX(k) * Math.max(1, Math.round(span / 4.2)));
+    }
+  }
+  uv.needsUpdate = true;
+  return g;
+}
+const mat = (color, o={}) => new THREE.MeshStandardMaterial({color, roughness:.8, transparent:true, ...o});
+
+// พื้น
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(1400, 1400), new THREE.MeshStandardMaterial({color:'#d5e3c4', roughness:1}));
+ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; scene.add(ground);
+function slab(r, color, y=.05, h=.1){
+  const w=(r[2]-r[0])*S, d=(r[3]-r[1])*S;
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({color, roughness:1}));
+  m.position.set(px((r[0]+r[2])/2), y, pz((r[1]+r[3])/2)); m.receiveShadow = true; scene.add(m); return m;
+}
+slab([693,100,1122,387], '#c9ccd1');
+slab([862,387,1045,565], '#c9ccd1');
+slab([CX-600, 565, CX+600, 597], '#4b5563', .08, .12);
+for (let x = -190; x < 190; x += 9){
+  const m = new THREE.Mesh(new THREE.BoxGeometry(4.5, .05, .4), new THREE.MeshBasicMaterial({color:'#f8fafc'}));
+  m.position.set(x, .17, pz(581)); scene.add(m);
+}
+
+// ต้นไม้
+let seed = 11; const rnd = () => (seed = seed * 16807 % 2147483647) / 2147483647;
+const trunkM = new THREE.MeshStandardMaterial({color:'#8a6a4a'});
+const leafMs = ['#6fae5a','#5f9e4e','#7dbb63'].map(c => new THREE.MeshStandardMaterial({color:c, flatShading:true, roughness:.9}));
+const NO_TREE = [[855,380,1050,600]].map(r => [px(r[0]), pz(r[1]), px(r[2]), pz(r[3])]);
+function tree(x, z, s=1){
+  if (NO_TREE.some(r => x > r[0] && x < r[2] && z > r[1] && z < r[3])) return;
+  const t = new THREE.Mesh(new THREE.CylinderGeometry(.25*s,.35*s,2.2*s,6), trunkM); t.position.set(x,1.1*s,z); t.castShadow = true;
+  const l = new THREE.Mesh(new THREE.IcosahedronGeometry(2.4*s,0), leafMs[Math.floor(rnd()*3)]); l.position.set(x,3.6*s,z); l.castShadow = true;
+  scene.add(t, l);
+}
+for (let x = 690; x < 1140; x += 22 + rnd()*12) tree(px(x), pz(80 + rnd()*10), .9 + rnd()*.5);
+for (let y = 110; y < 380; y += 22 + rnd()*12) { tree(px(672 - rnd()*8), pz(y), .9 + rnd()*.5); tree(px(1138 + rnd()*8), pz(y), .9 + rnd()*.5); }
+for (let i = 0; i < 26; i++){ tree(px(700 + rnd()*175), pz(405 + rnd()*145), .8 + rnd()*.5); tree(px(1030 + rnd()*95), pz(405 + rnd()*145), .8 + rnd()*.5); }
+for (let x = 680; x < 1140; x += 20 + rnd()*10) tree(px(x), pz(612 + rnd()*10), .9 + rnd()*.4);
+
+// ป้ายข้อความ
+function label(text, cls, pos, onClick){
+  const el = document.createElement('div'); el.className = 'lbl ' + (cls||''); el.textContent = text;
+  if (onClick) el.addEventListener('click', e => { e.stopPropagation(); onClick(); });
+  const o = new CSS2DObject(el); o.position.copy(pos); scene.add(o); return o;
+}
+
+// อาคาร
+const B = {}, PICK = [];
+const HL = new THREE.Color('#ff7a1a');
+function gableRoof(w, d, h, color, ov=.7){
+  const along = w >= d, span = along ? d : w, len = along ? w : d;
+  const sh = new THREE.Shape(); sh.moveTo(-span/2-ov,0); sh.lineTo(span/2+ov,0); sh.lineTo(0,h); sh.closePath();
+  const g = new THREE.ExtrudeGeometry(sh, {depth:len+ov*2, bevelEnabled:false}); g.translate(0,0,-(len+ov*2)/2);
+  if (along) g.rotateY(Math.PI/2);
+  return new THREE.Mesh(g, mat(color, {flatShading:true, roughness:.6}));
+}
+function archRoof(w, d, flat, color){
+  const along = w >= d, r = (along ? d : w)/2 + .4, len = along ? w : d;
+  const g = new THREE.CylinderGeometry(r, r, len+.8, 32, 1, false, 0, Math.PI);
+  g.rotateZ(Math.PI/2); if (!along) g.rotateY(Math.PI/2);
+  const m = new THREE.Mesh(g, mat(color, {roughness:.45, metalness:.15})); m.scale.y = flat; return m;
+}
+
+/* ---------- อาคาร 6 (ตามภาพถ่ายจริง) ---------- */
+function facadeTex6(){
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = '#fbfbf8'; g.fillRect(0,0,128,128);
+  g.fillStyle = '#7c2626'; g.fillRect(12,26,104,56);
+  g.fillStyle = '#46505c'; for (let i = 0; i < 4; i++) g.fillRect(16+i*25,30,21,48);
+  g.fillStyle = '#6f7b88'; for (let i = 0; i < 4; i++) g.fillRect(16+i*25,30,21,9);
+  g.fillStyle = '#e9ebed'; g.fillRect(94,88,22,15);
+  g.fillStyle = '#9aa3ad'; g.beginPath(); g.arc(101,95.5,5,0,7); g.fill();
+  g.fillStyle = '#ddd8c6'; g.fillRect(0,121,128,7);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
+}
+const TEX6 = facadeTex6();
+function coreTexture(){
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = '#f1ede0'; g.fillRect(0,0,128,128);
+  g.fillStyle = '#93cfc0'; g.fillRect(0,114,128,14);
+  g.fillStyle = '#7c2626'; g.fillRect(40,26,20,60); g.fillRect(68,26,20,60);
+  g.fillStyle = '#46505c'; g.fillRect(43,29,14,54); g.fillRect(71,29,14,54);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
+}
+const TEXC = coreTexture();
+let B6_CORE = null;
+function textPlane(text, wM, hM, bg, fg){
+  const c = document.createElement('canvas'); c.width = 1024; c.height = Math.max(32, Math.round(1024*hM/wM));
+  const g = c.getContext('2d');
+  if (bg){ g.fillStyle = bg; g.fillRect(0,0,c.width,c.height); }
+  let fs = c.height*.72; g.font = `800 ${fs}px Sarabun, sans-serif`;
+  while (g.measureText(text).width > c.width*.92 && fs > 8){ fs -= 2; g.font = `800 ${fs}px Sarabun, sans-serif`; }
+  g.fillStyle = fg; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, c.width/2, c.height/2 + fs*.06);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(wM, hM), new THREE.MeshBasicMaterial({map:t, transparent:true}));
+  m.userData.redraw = () => { /* วาดใหม่เมื่อฟอนต์โหลดเสร็จ */
+    g.clearRect(0,0,c.width,c.height); if (bg){ g.fillStyle = bg; g.fillRect(0,0,c.width,c.height); }
+    g.font = `800 ${fs}px Sarabun, sans-serif`; g.fillStyle = fg; g.fillText(text, c.width/2, c.height/2 + fs*.06); t.needsUpdate = true; };
+  TEXT_PLANES.push(m);
+  return m;
+}
+const TEXT_PLANES = [], LATE_TEX = [];
+function buildB6(def, all){
+  const fh = FH, n = def.floors, r = def.parts[0], Y0 = .1;
+  const x0 = px(r[0]), x1 = px(r[2]), z0 = pz(r[1]), z1 = pz(r[3]);
+  const w = x1-x0, d = z1-z0, cx = (x0+x1)/2, cz = (z0+z1)/2;
+  const MINT = '#8fcdbd', CREAM = '#efeadb', WHITE = '#ffffff';
+  const SD = def.front === 'west' ? -1 : 1, FX = SD > 0 ? x1 : x0;   // ด้านหน้าอาคาร
+  const box = (a,b,c) => new THREE.BoxGeometry(a,b,c);
+  const add = (geo, color, x, y, z, floor, opts={}) => {
+    const m = new THREE.Mesh(geo, mat(new THREE.Color(color), opts));
+    m.position.set(x, y, z); m.castShadow = m.receiveShadow = true;
+    m.userData = {bid:def.id, floor, base:new THREE.Color(color)};
+    scene.add(m); PICK.push(m); all.push(m); return m;
+  };
+  const addPlane = (m, x, y, z, floor) => {
+    m.position.set(x, y, z); m.rotation.y = SD*Math.PI/2; m.userData.bid = def.id; m.userData.floor = floor;
+    scene.add(m); all.push(m); return m;
+  };
+  // ชั้น 1 : ใต้ถุนโล่งทั้งชั้น มีแต่เสา
+  add(box(w, .2, d), '#d6d9d2', cx, Y0+.1, cz, 1);
+  for (let i = 0; i <= 7; i++){
+    const z = z0 + 1.2 + i*(d-2.4)/7;
+    for (const x of [x0+.6, cx, x1-.6]) add(box(.75, fh, .75), MINT, x, Y0+fh/2, z, 1);
+  }
+  // ปล่องบันไดหัวอาคาร (ทิศเหนือ ฝั่งอาคาร 1)
+  const cw = w*.42, cd = 6, ccx = cx, ccz = z0 + cd/2 - 1.4;
+  for (let f = 1; f <= n; f++){
+    const y = Y0 + (f-1)*fh;
+    if (f > 1) add(floorBox(cw, fh-.06, cd), WHITE, ccx, y+(fh-.06)/2, ccz, f, {map:TEXC});
+    else for (const sx of [-1,1]) add(box(1.2, fh, 1.2), MINT, ccx+sx*(cw/2-.6), y+fh/2, ccz-cd/2+.6, f);
+    for (const sx of [-1,1]) add(box(.6, fh, .6), MINT, ccx+sx*(cw/2+.1), y+fh/2, ccz-cd/2-.1, f);
+  }
+  {
+    const y = Y0 + n*fh, hh = 4.8;
+    add(floorBox(cw, hh, cd), WHITE, ccx, y+hh/2, ccz, n+1, {map:TEXC});
+    add(box(cw+.5, .4, cd+.5), MINT, ccx, y+hh+.2, ccz, n+1);
+  }
+  B6_CORE = {x:ccx, zN:ccz-cd/2};
+  // โต๊ะจุดรับลงทะเบียน + เวที (ชั้น 1)
+  for (let k = 0; k < 4; k++) add(box(.9, .8, 2.4), '#d94141', x0 + 3, Y0+.5, z0 + 12 + k*4, 1);
+  for (let k = 0; k < 2; k++) add(box(.9, .8, 2.4), '#d94141', x1 - 4, Y0+.5, z0 + 12 + k*4, 1);
+  for (const sx of [x0 + w*.25, x1 - w*.25]) add(box(w*.38, .6, 3.2), '#5a3a2a', sx, Y0+.3, z1 - 9, 1);
+  // ชั้นลอยบนหลังคาฝั่งทิศใต้ (เหมือนฝั่งทิศเหนือ)
+  {
+    const sz = z1 - cd/2 + 1.4, y = Y0 + n*fh, hh = 4.8;
+    add(floorBox(cw, hh, cd), WHITE, ccx, y+hh/2, sz, n+1, {map:TEXC});
+    add(box(cw+.5, .4, cd+.5), MINT, ccx, y+hh+.2, sz, n+1);
+    for (const sx of [-1,1]) add(box(.6, hh, .6), MINT, ccx+sx*(cw/2+.1), y+hh/2, sz+cd/2+.1, n+1);
+  }
+  add(box(3.5, .45, 9), '#d9dbd8', FX+SD*3.6, Y0+.12, cz, 1);             // บันไดทางเข้า
+  // ชั้น 2–5
+  const pillarZ = []; for (let i = 0; i <= 5; i++) pillarZ.push(z0 + 1.2 + i*(d-2.4)/5);
+  for (let f = 2; f <= n; f++){
+    const y = Y0 + (f-1)*fh;
+    add(floorBox(w, fh-.06, d), WHITE, cx, y+(fh-.06)/2, cz, f, {map:TEX6});
+    add(box(w+1.8, .34, d+1.8), MINT, cx, y+.17, cz, f);               // คิ้วชั้นสีเขียว
+  }
+  for (let f = 1; f <= n; f++){
+    const y = Y0 + (f-1)*fh;
+    for (const z of pillarZ) for (const x of [x0-.4, x1+.4]) add(box(.9, fh, 1.1), MINT, x, y+fh/2, z, f);
+  }
+  // หอกลางด้านหน้า (ทิศตะวันตก)
+  const tw = 10, td = 2.6, tx = FX + SD*td/2;
+  for (let f = 2; f <= n; f++){
+    const y = Y0 + (f-1)*fh;
+    add(floorBox(td, fh-.06, tw), WHITE, tx, y+(fh-.06)/2, cz, f, {map:TEX6});
+    add(box(td+.7, .34, tw+.4), MINT, tx+SD*.15, y+.17, cz, f);
+  }
+  for (const sgn of [-1, 1]) for (let f = 1; f <= n; f++){
+    const y = Y0 + (f-1)*fh;
+    add(box(td+.5, fh, 1.5), MINT, tx+SD*.25, y+fh/2, cz + sgn*(tw/2+.75), f);
+  }
+  add(box(td+.5, 1.3, tw), '#f4f1e6', tx+SD*.25, Y0+fh-.65, cz, 1);       // ป้ายใต้หอ
+  addPlane(textPlane('อาคารองค์การบริหารส่วนจังหวัดปทุมธานี', tw-.6, 1.1, null, '#1e3a8a'), tx+SD*(.25+(td+.5)/2+.03), Y0+fh-.65, cz, 1);
+  // ป้าย อาคาร ๖ / Building6
+  addPlane(textPlane('อาคาร ๖', 7, 1.3, null, '#151515'), FX+SD*.03, Y0+2*fh-.55, cz - SD*(tw/2 + 6), 2);
+  addPlane(textPlane('Building6', 7, 1.3, null, '#151515'), FX+SD*.03, Y0+2*fh-.55, cz + SD*(tw/2 + 6), 2);
+  // ระเบียงด้านทิศใต้ (หันออกถนน)
+  for (let f = 2; f <= n; f++){
+    const y = Y0 + (f-1)*fh;
+    for (const bx of [cx]){
+      add(box(3.4, .25, 1.4), WHITE, bx, y+.12, z1+.7, f);
+      add(box(3.4, 1.0, .08), '#9aa3ab', bx, y+.75, z1+1.36, f, {metalness:.5});
+      for (const sx of [-1, 1]) add(box(.08, 1.0, 1.4), '#9aa3ab', bx+sx*1.66, y+.75, z1+.7, f);
+    }
+  }
+  // หลังคา
+  const top = Y0 + n*fh;
+  add(box(w+1.8, .34, d+1.8), MINT, cx, top+.17, cz, n+1);
+  add(box(td+.8, 2.8, tw+3.2), MINT, tx+SD*.1, top+1.4, cz, n+1);          // ยอดหอ
+  add(box(.5, 1.7, tw-.6), '#8a6a46', tx+SD*(.1+(td+.8)/2+.2), top+1.5, cz, n+1);
+  addPlane(textPlane('โรงเรียนธัญรัตน์', tw-1, 1.3, '#8a6a46', '#ffffff'), tx+SD*(.1+(td+.8)/2+.47), top+1.5, cz, n+1);
+  const rh = w*.13;
+  const roof = add(gableRoof(w, d, rh, '#aab5bf', 1.8).geometry, '#aab5bf', cx, top+.34, cz, n+1, {flatShading:true, roughness:.5, metalness:.2});
+  return top + .34 + rh;
+}
+
+/* ---------- อาคาร 1 (แบบ 318 ล./30 ตามภาพถ่าย) ---------- */
+function adder(def, all){
+  const add = (geo, color, x, y, z, floor, opts={}) => {
+    const m = new THREE.Mesh(geo, mat(new THREE.Color(color), opts));
+    m.position.set(x, y, z); m.castShadow = m.receiveShadow = true;
+    m.userData = {bid:def.id, floor, base:new THREE.Color(color)};
+    scene.add(m); PICK.push(m); all.push(m); return m;
+  };
+  const plane = (geo, material, x, y, z, floor, rotY=0) => {
+    const m = new THREE.Mesh(geo, material); m.position.set(x, y, z); m.rotation.y = rotY;
+    m.userData = {bid:def.id, floor}; scene.add(m); all.push(m); return m;
+  };
+  return {add, plane};
+}
+function checkerMat(rep, off){
+  const c = document.createElement('canvas'); c.width = 128; c.height = 16;
+  const g = c.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0,0,128,16);
+  g.fillStyle = '#1f9a48'; g.fillRect(off ? 64 : 0, 0, 64, 16);
+  const t = new THREE.CanvasTexture(c); t.wrapS = THREE.RepeatWrapping; t.repeat.x = rep; t.colorSpace = THREE.SRGBColorSpace;
+  return new THREE.MeshStandardMaterial({map:t, roughness:.7, transparent:true});
+}
+function screenMat(wM, hM, texts){
+  const W = 2048, H = Math.max(64, Math.round(W*hM/wM));
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  const draw = () => {
+    g.clearRect(0,0,W,H);
+    g.fillStyle = 'rgba(228,233,236,.55)'; g.fillRect(0,0,W,H);
+    const step = W/(wM*5);
+    g.fillStyle = '#ffffff'; for (let x = 0; x < W; x += step) g.fillRect(x, 0, step*.45, H);
+    g.fillRect(0,0,W,H*.03); g.fillRect(0,H*.97,W,H*.03);
+    for (const tx of texts){
+      const fs = H*.42; g.font = `900 ${fs}px Sarabun, Arial, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.lineWidth = fs*.12; g.strokeStyle = '#ffffff'; g.strokeText(tx.t, tx.x*W, H/2);
+      g.fillStyle = '#1f9a48'; g.fillText(tx.t, tx.x*W, H/2);
+    }
+    t.needsUpdate = true;
+  };
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  draw(); const m = new THREE.MeshStandardMaterial({map:t, transparent:true, roughness:.6, side:THREE.DoubleSide});
+  m.userData.redraw = draw; SCREEN_MATS.push(m);
+  return m;
+}
+const SCREEN_MATS = [];
+function emblemMat(){
+  const t = new THREE.TextureLoader().load(EMBLEM_SRC); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return new THREE.MeshBasicMaterial({map:t, transparent:true});
+}
+function buildB1(def, all){
+  const fh = FH, n = def.floors, r = def.parts[0], Y0 = .1;
+  const x0 = px(r[0]), x1 = px(r[2]), z0 = pz(r[1]), z1 = pz(r[3]);
+  const w = x1-x0, d = z1-z0, cx = (x0+x1)/2, cz = (z0+z1)/2;
+  const GREEN = '#1f9a48', WHITE = '#ffffff', COR = 3.2, bays = 12, bay = w/bays;
+  const {add, plane} = adder(def, all);
+  const box = (a,b,c) => new THREE.BoxGeometry(a,b,c);
+  // ชั้น 1 : ใต้ถุน มีห้องสำนักงานด้านหลัง เสาด้านหน้า
+  add(box(w, .2, d), '#d6d9d2', cx, Y0+.1, cz, 1);
+  for (let i = 0; i <= bays; i++) for (const z of [z1-.4, z1-COR, z0+.4]) add(box(.6, fh, .6), WHITE, x0+i*bay, Y0+fh/2, z, 1);
+  // ชั้น 2–4 : ชั้นละ 6 ห้องเรียน ระเบียงลายเขียว-ขาว
+  for (let f = 2; f <= n; f++){
+    const y = Y0 + (f-1)*fh, rd = d - COR;
+    add(floorBox(w, fh-.06, rd), WHITE, cx, y+(fh-.06)/2, z0+rd/2, f, {map:TEX});
+    add(box(w, .35, COR), WHITE, cx, y+.17, z1-COR/2, f);
+    add(box(w, 1.1, .22), WHITE, cx, y+.9, z1-.11, f);
+    plane(new THREE.PlaneGeometry(w, 1.1), checkerMat(w/6, 0), cx, y+.9, z1+.01, f);
+    plane(new THREE.PlaneGeometry(w, .36), checkerMat(w/6, 1), cx, y+.17, z1+.01, f);
+    for (let i = 0; i <= bays; i++) add(box(.35, fh-1.45, .35), WHITE, x0+i*bay, y+1.45+(fh-1.45)/2, z1-.2, f);
+    for (const ex of [x0-.01, x1+.01]) plane(new THREE.PlaneGeometry(d, .36), checkerMat(d/6, f%2), ex, y+.17, cz, f, ex < cx ? -Math.PI/2 : Math.PI/2);
+  }
+  // หลังคาแบน ขอบเขียว
+  const top = Y0 + n*fh;
+  add(box(w+1.6, 1.1, d+1.6), GREEN, cx, top+.55, cz, n+1);
+  add(box(w+1.2, .22, d+1.2), '#e5e7eb', cx, top+1.12, cz, n+1);
+  // แผงระแนงชั้นบน + THANYARAT SCHOOL
+  const sw = w*.8, sh = fh - .25;
+  plane(new THREE.PlaneGeometry(sw, sh), screenMat(sw, sh, [{t:'THANYARAT', x:.2}, {t:'SCHOOL', x:.84}]), x0+sw/2, top-sh/2-.05, z1+.4, n);
+  const cW = w*.17, cH = (n-1)*fh - 1.3, ccx = x0 + w*.46;
+  plane(new THREE.PlaneGeometry(cW, cH), screenMat(cW, cH, []), ccx, Y0+fh+1.3+cH/2, z1+.5, 3);
+  plane(new THREE.CircleGeometry(1.5, 40), emblemMat(), ccx, top-sh/2-.05, z1+.6, n);
+  return top + 1.25;
+}
+// สะพานเชื่อม อาคาร 6 ↔ อาคาร 1 (ระดับชั้น 3)
+function buildBridge(){
+  const r1 = DEFS.find(d => d.id === '1').parts[0];
+  const x = B6_CORE.x, zA = pz(r1[3]) + .1, zB = B6_CORE.zN, len = zB - zA, zc = (zA+zB)/2, y = .1 + 2*FH;
+  const m = (c, o={}) => mat(c, {transparent:false, ...o});
+  const parts = [];
+  const add = (geo, material, px_, py, pz_) => { const o = new THREE.Mesh(geo, material); o.position.set(px_, py, pz_); o.castShadow = o.receiveShadow = true; scene.add(o); parts.push(o); return o; };
+  add(new THREE.BoxGeometry(3.2, .35, len), m('#cfd4d0'), x, y+.17, zc);
+  for (const s of [-1,1]){
+    add(new THREE.BoxGeometry(.08, .1, len), m('#e5e7eb'), x+s*1.5, y+1.1, zc);
+    for (let z = zA+.3; z < zB; z += 1.2) add(new THREE.BoxGeometry(.06, 1, .06), m('#e5e7eb'), x+s*1.5, y+.6, z);
+    for (const z of [zA+.3, zB-.3]) add(new THREE.BoxGeometry(.15, 2.6, .15), m('#7a8b84'), x+s*1.5, y+1.6, z);
+    add(new THREE.BoxGeometry(.5, y, .5), m('#8fcdbd'), x+s*1.1, y/2, zc);
+  }
+  const roof = archRoof(3.6, len+.6, .35, '#cfd6dc'); roof.material.transparent = false;
+  roof.position.set(x, y+2.9, zc); roof.castShadow = true; scene.add(roof);
+}
+
+/* ---------- โดม : ใต้โดมโล่ง ---------- */
+function courtMat(wM, dM){
+  const W = 1024, H = Math.round(W*dM/wM), c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d'); const k = W/wM;
+  g.fillStyle = '#4f9078'; g.fillRect(0,0,W,H);
+  const cw = 28*k, ch = 15*k, ox = (W-cw)/2, oy = (H-ch)/2;
+  g.fillStyle = '#c4625a'; g.fillRect(ox, oy, cw/2-.6*k, ch); g.fillRect(W/2+.6*k, oy, cw/2-.6*k, ch);
+  g.strokeStyle = '#ffffff'; g.lineWidth = Math.max(3, .08*k*3);
+  g.strokeRect(ox, oy, cw, ch);
+  g.beginPath(); g.moveTo(W/2, oy); g.lineTo(W/2, oy+ch); g.stroke();
+  g.beginPath(); g.arc(W/2, H/2, 1.8*k, 0, 7); g.stroke();
+  for (const sx of [ox, ox+cw]){ const dir = sx === ox ? 1 : -1;
+    g.strokeRect(Math.min(sx, sx+dir*5.8*k), H/2-2.45*k, 5.8*k, 4.9*k);
+    g.beginPath(); g.arc(sx+dir*1.575*k, H/2, 6.75*k, dir > 0 ? -Math.PI/2 : Math.PI/2, dir > 0 ? Math.PI/2 : Math.PI*1.5); g.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return new THREE.MeshStandardMaterial({map:t, roughness:.9, transparent:true});
+}
+function buildDome(def, all){
+  const fh = def.fh, r = def.parts[0], Y0 = .1;
+  const x0 = px(r[0]), x1 = px(r[2]), z0 = pz(r[1]), z1 = pz(r[3]);
+  const w = x1-x0, d = z1-z0, cx = (x0+x1)/2, cz = (z0+z1)/2;
+  const {add, plane} = adder(def, all);
+  const box = (a,b,c) => new THREE.BoxGeometry(a,b,c);
+  const COL = '#8b9196';
+  add(box(w, .25, d), '#bfc6c0', cx, Y0+.12, cz, 1);
+  const court = plane(new THREE.PlaneGeometry(w-2, d-2), courtMat(w-2, d-2), cx, Y0+.26, cz, 1);
+  court.rotation.x = -Math.PI/2; court.receiveShadow = true;
+  const nx = Math.round(w/6.5), nz = Math.round(d/7);
+  const hide = m => { m.userData.hideable = 1; return m; };
+  for (let i = 0; i <= nx; i++) for (const z of [z0+.4, z1-.4]) hide(add(box(.7, fh, .7), COL, x0+.4+i*(w-.8)/nx, Y0+fh/2, z, 1));
+  for (let j = 1; j < nz; j++) for (const x of [x0+.4, x1-.4]) hide(add(box(.7, fh, .7), COL, x, Y0+fh/2, z0+.4+j*(d-.8)/nz, 1));
+  for (const z of [z0+.4, z1-.4]) hide(add(box(w, .7, .7), COL, cx, Y0+fh-.35, z, 1));
+  for (const x of [x0+.4, x1-.4]) hide(add(box(.7, .7, d), COL, x, Y0+fh-.35, cz, 1));
+  for (let i = 0; i <= nx; i++) for (const z of [z0+.4, z1-.4]) hide(add(box(1.3, 2.4, 1.3), '#9fd8dc', x0+.4+i*(w-.8)/nx, Y0+1.2, z, 1));
+  for (let j = 1; j < nz; j++) for (const x of [x0+.4, x1-.4]) hide(add(box(1.3, 2.4, 1.3), '#9fd8dc', x, Y0+1.2, z0+.4+j*(d-.8)/nz, 1));
+  // เวที (ชิดอาคาร 5 ด้านทิศตะวันตก)
+  {
+    const sx0 = x0 + 1.3, sd = 6.5, sw = 18, scx = sx0 + sd/2, DG = '#1d7f45', MG = '#29a55b';
+    add(box(sd, 1.3, sw), DG, scx, Y0+.65, cz, 1);
+    add(box(sd-1, .12, sw-.6), '#2f9e5c', scx+.3, Y0+1.36, cz, 1);
+    add(box(.6, 7.2, sw), MG, sx0+.3, Y0+3.6, cz, 1);
+    plane(new THREE.PlaneGeometry(7.5, 4.2), ledMat(), sx0+.62, Y0+4.6, cz, 1, Math.PI/2);
+    for (const s of [-1, 1]){
+      add(box(2.4, 8.2, 2.4), DG, sx0+1.2, Y0+4.1, cz+s*(sw/2+1.2), 1);
+      plane(new THREE.PlaneGeometry(1.6, 3), new THREE.MeshBasicMaterial({color:'#1c1f22', transparent:true}), sx0+2.42, Y0+5.6, cz+s*(sw/2+1.2), 1, Math.PI/2);
+    }
+    const eaveY = Y0 + 7.4, ridgeY = Y0 + 10, half = sw/2 + .6;
+    const len = Math.hypot(half, ridgeY-eaveY), ang = Math.atan2(ridgeY-eaveY, half);
+    for (const s of [-1, 1]){ const m = add(box(2.8, .7, len), DG, sx0+1.4, (ridgeY+eaveY)/2, cz+s*half/2, 1); m.rotation.x = s*ang; }
+  }
+  const roof = archRoof(w, d, def.flat, '#d9dde2');
+  roof.position.set(cx, Y0+fh, cz); roof.castShadow = true; roof.userData = {bid:def.id, floor:2, hideable:1};
+  scene.add(roof); PICK.push(roof); all.push(roof);
+  return Y0 + fh + (Math.min(w,d)/2 + .4)*def.flat;
+}
+/* ---------- โรงยิม (อาคารอเนกประสงค์พลศึกษา) ---------- */
+function gymSignMat(wM, hM){
+  const W = 1024, H = Math.round(W*hM/wM), c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  const draw = () => {
+    g.clearRect(0,0,W,H);
+    let fs = H*.16; g.font = `800 ${fs}px Sarabun, sans-serif`;
+    const txt = 'อาคารอเนกประสงค์พลศึกษา';
+    while (g.measureText(txt).width > W*.8) { fs -= 2; g.font = `800 ${fs}px Sarabun, sans-serif`; }
+    g.fillStyle = '#1f2937'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, W/2, H*.22);
+    const s = W*.018, gap = s*.35, rows = 6;
+    g.fillStyle = '#6b7280';
+    for (let rI = 0; rI < rows; rI++){
+      const n = 8 + rI*4, rowW = n*(s+gap), y = H*.4 + rI*(s+gap);
+      for (let k = 0; k < n; k++) g.fillRect(W/2 - rowW/2 + k*(s+gap), y, s, s);
+    }
+    g.fillStyle = '#3a3f45'; g.fillRect(W*.32, H*.8, W*.36, H*.13);
+    t.needsUpdate = true;
+  };
+  draw();
+  const m = new THREE.MeshBasicMaterial({map:t, transparent:true}); m.userData.redraw = draw; SCREEN_MATS.push(m);
+  return m;
+}
+function gymCourtMat(wM, dM){
+  const Wc = 1024, Hc = Math.round(Wc*dM/wM), c = document.createElement('canvas'); c.width = Wc; c.height = Hc;
+  const g = c.getContext('2d'), k = Wc/wM;
+  g.fillStyle = '#c98f55'; g.fillRect(0,0,Wc,Hc);
+  g.strokeStyle = '#ffffff'; g.lineWidth = Math.max(3, .06*k);
+  const cw = (wM - 3)/2, ch = dM - 2;               // 2 สนามวางเคียงกัน
+  for (const k0 of [0, 1]){
+    const ox = (1 + k0*(cw + 1))*k, oy = k, W_ = cw*k, H_ = ch*k;
+    g.fillStyle = k0 ? '#2f7fb8' : '#2f8f5a'; g.fillRect(ox, oy, W_, H_);
+    g.strokeRect(ox, oy, W_, H_);
+    g.beginPath(); g.moveTo(ox + W_/2, oy); g.lineTo(ox + W_/2, oy + H_); g.stroke();
+    g.beginPath(); g.arc(ox + W_/2, oy + H_/2, 1.8*k, 0, 7); g.stroke();
+    for (const [sx, dir] of [[ox, 1], [ox + W_, -1]]){
+      const kw = Math.min(5.8, cw*.22)*k, kh = 4.9*k;
+      g.fillStyle = '#c2553f'; g.fillRect(dir > 0 ? sx : sx - kw, oy + H_/2 - kh/2, kw, kh); g.strokeRect(dir > 0 ? sx : sx - kw, oy + H_/2 - kh/2, kw, kh);
+      g.beginPath(); g.arc(sx + dir*1.5*k, oy + H_/2, Math.min(6.7, H_/k/2 - .2)*k, dir > 0 ? -Math.PI/2 : Math.PI/2, dir > 0 ? Math.PI/2 : Math.PI*1.5); g.stroke();
+    }
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return new THREE.MeshStandardMaterial({map:t, roughness:.6, transparent:true});
+}
+function buildGym(def, all){
+  const FH1 = 3.4, H = 9.5, r = def.parts[0], Y0 = .1;
+  const x0 = px(r[0]), x1 = px(r[2]), z0 = pz(r[1]), z1 = pz(r[3]);
+  const w = x1-x0, d = z1-z0, cx = (x0+x1)/2, cz = (z0+z1)/2;
+  const {add, plane} = adder(def, all);
+  const box = (a,b,c) => new THREE.BoxGeometry(a,b,c);
+  const BLUE = '#bfe8ee', LIME = '#86d64f', LIME2 = '#5fbf3a';
+  // ---- ชั้น 1 : ลานจอดรถใต้อาคาร 2 แถว (โล่ง มีเสา)
+  add(box(w, .15, d), '#8d949b', cx, Y0+.07, cz, 1);
+  const bays = Math.round(w/6), bay = w/bays;
+  for (let i = 0; i <= bays; i++) for (const zz of [z0+.35, cz, z1-.35]) add(box(.6, FH1, .6), LIME2, x0+i*bay, Y0+FH1/2, zz, 1);
+  add(box(w, .3, .15), '#f2c230', cx, Y0+.4, z0+.1, 1);
+  let sd = 77; const rr = () => (sd = sd*16807 % 2147483647)/2147483647;
+  const CARC = ['#f5f6f7','#d7dadd','#b9bec4','#2b2f35','#1c1f24','#8a1f24','#3a5f8a'];
+  for (const [zc, rot] of [[z0 + d*.27, 0], [z0 + d*.73, Math.PI]]){
+    for (let x = x0 + 1.5; x < x1 - 1.2; x += 2.6){
+      add(box(.1, .02, 4.6), '#ffffff', x - 1.3, Y0+.16, zc, 1);
+      if (rr() < .75){
+        const c = CARC[Math.floor(rr()*CARC.length)];
+        add(box(1.8, .75, 4.3), c, x, Y0+.55, zc, 1, {roughness:.35, metalness:.4}).rotation.y = rot;
+        add(box(1.6, .6, 2.2), '#2a3440', x, Y0+1.2, zc + (rot ? .2 : -.2), 1);
+      }
+    }
+  }
+  // ---- ชั้น 2 : โถงสนามบาสเกตบอล 2 สนาม
+  const y2 = Y0 + FH1;
+  add(box(w+.3, .4, d+.3), LIME, cx, y2+.2, cz, 2);
+  const court = plane(new THREE.PlaneGeometry(w-.6, d-.6), gymCourtMat(w-.6, d-.6), cx, y2+.42, cz, 2);
+  court.rotation.x = -Math.PI/2;
+  for (let k = 0; k < 2; k++){       // แป้นบาส 4 ชุด
+    const cw = (w - 3)/2, oxL = x0 + 1 + k*(cw + 1);
+    for (const [hx, dir] of [[oxL + .6, 1], [oxL + cw - .6, -1]]){
+      add(box(.15, 3.4, .15), '#4b5563', hx - dir*.3, y2+.4+1.7, cz, 2);
+      add(box(.08, 1.05, 1.8), '#ffffff', hx, y2+.4+3.2, cz, 2);
+      add(new THREE.TorusGeometry(.23, .03, 6, 16), '#e2774a', hx + dir*.4, y2+.4+3.05, cz, 2).rotation.x = Math.PI/2;
+    }
+  }
+  const wh = H - FH1;
+  add(box(w, 1.6, .2), LIME, cx, y2+.4+.8, z0+.1, 2);  add(box(w, 1.6, .2), LIME, cx, y2+.4+.8, z1-.1, 2);
+  add(box(w, wh-2, .2), BLUE, cx, y2+1.6+(wh-2)/2+.4, z0+.1, 2);
+  add(box(w, wh-2, .2), BLUE, cx, y2+1.6+(wh-2)/2+.4, z1-.1, 2);
+  for (const xx of [x0+.1, x1-.1]){ add(box(.2, 1.6, d), LIME, xx, y2+.4+.8, cz, 2); add(box(.2, wh-2, d), BLUE, xx, y2+1.6+(wh-2)/2+.4, cz, 2); }
+  for (const sx of [-1,1]) for (const sz of [-1,1]) add(box(.8, H, .8), LIME2, cx+sx*w/2, Y0+H/2, cz+sz*d/2, 2);
+  for (const zz of [z0, z1]) add(box(w+.3, .35, .4), LIME2, cx, Y0+H-.17, zz, 2);
+  for (const xx of [x0, x1]) add(box(.4, .35, d+.3), LIME2, xx, Y0+H-.17, cz, 2);
+  const ex = x1 + .13;
+  plane(new THREE.PlaneGeometry(d*.92, wh-1.4), gymSignMat(d*.92, wh-1.4), ex, y2+.4+(wh-1.4)/2+.6, cz, 2, Math.PI/2);
+  const win = new THREE.MeshBasicMaterial({color:'#2f3a44', transparent:true});
+  for (const z of [z0-.03, z1+.03]) plane(new THREE.PlaneGeometry(w*.7, .9), win.clone(), cx, y2+wh-1.4, z, 2, z < cz ? Math.PI : 0);
+  // หลังคาเหล็กโค้ง (ซ่อนได้ด้วยปุ่มซ่อนหลังคา)
+  const roof = archRoof(w+1.6, d+1.6, .3, '#d3d7da');
+  roof.position.set(cx, Y0+H, cz); roof.castShadow = true; roof.userData = {bid:def.id, floor:3, hideable:1};
+  scene.add(roof); PICK.push(roof); all.push(roof);
+  return Y0 + H + ((d+1.6)/2 + .4)*.3;
+}
+/* ---------- ทางเชื่อม อาคาร 1 ↔ อาคาร 4 (ยกระดับ ชั้น 2) ---------- */
+function buildBridge14(){
+  const xA = px(862), xB = px(905), zc = pz(328.5), y = .1 + FH, len = xB - xA, xc = (xA + xB)/2;
+  const m = (c, o={}) => mat(c, {transparent:false, ...o});
+  const add = (geo, material, X, Y, Z) => { const o = new THREE.Mesh(geo, material); o.position.set(X, Y, Z); o.castShadow = o.receiveShadow = true; scene.add(o); return o; };
+  const TEAL = '#5cbfb5', LBLUE = '#8fd6dc';
+  add(new THREE.BoxGeometry(len, .45, 3.3), m('#d6dbd8'), xc, y+.22, zc);
+  for (const s of [-1,1]){
+    add(new THREE.BoxGeometry(len, .55, .2), m(TEAL), xc, y-.05, zc+s*1.65);
+    add(new THREE.BoxGeometry(len, .08, .08), m('#e5e7eb'), xc, y+1.2, zc+s*1.55);
+    for (let x = xA+.4; x < xB; x += 1.1) add(new THREE.BoxGeometry(.05, 1, .05), m('#e5e7eb'), x, y+.7, zc+s*1.55);
+    for (let x = xA+.3; x <= xB; x += len/3) add(new THREE.BoxGeometry(.14, 2.6, .14), m(TEAL), x, y+1.75, zc+s*1.55);
+  }
+  for (const k of [.33, .67]){
+    const x = xA + len*k;
+    add(new THREE.BoxGeometry(.8, y-1.1, .8), m(LBLUE), x, (y-1.1)/2, zc);
+    const cap = add(new THREE.CylinderGeometry(1.7, .55, 1.1, 4), m(LBLUE, {flatShading:true}), x, y-.55, zc);
+    cap.rotation.y = Math.PI/4;
+  }
+  const roof = archRoof(len+.4, 3.8, .75, '#c3c8cc'); roof.material.transparent = false;
+  roof.position.set(xc, y+3.05, zc); roof.castShadow = true; scene.add(roof);
+}
+
+function ledMat(){
+  const W = 1024, H = 574, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const draw = () => {
+    const gr = g.createLinearGradient(0,0,0,H); gr.addColorStop(0,'#bfe3e6'); gr.addColorStop(1,'#7fa9a2'); g.fillStyle = gr; g.fillRect(0,0,W,H);
+    g.fillStyle = '#ffffff'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = '800 64px Sarabun, sans-serif'; g.fillText('วิสัยทัศน์โรงเรียนธัญรัตน์', W/2, H*.3);
+    g.font = '600 38px Sarabun, sans-serif'; g.fillText('งานแข่งขันหุ่นยนต์และคอมพิวเตอร์', W/2, H*.58);
+    g.strokeStyle = '#1d7f45'; g.lineWidth = 18; g.strokeRect(0,0,W,H); t.needsUpdate = true;
+  };
+  draw(); const m = new THREE.MeshBasicMaterial({map:t, transparent:true}); m.userData.redraw = draw; SCREEN_MATS.push(m); return m;
+}
+function ventMat(base, dot, rep){
+  const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+  g.fillStyle = base; g.fillRect(0,0,64,64); g.fillStyle = dot;
+  for (let y = 4; y < 64; y += 12) for (let x = 4; x < 64; x += 12) g.fillRect(x, y, 6, 6);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep[0], rep[1]); t.colorSpace = THREE.SRGBColorSpace;
+  return new THREE.MeshStandardMaterial({map:t, roughness:.85, transparent:true});
+}
+/* ---------- อาคารระเบียงทางเดิน (อาคาร 2, 3, 4) ---------- */
+const STYLES = {
+  b2:{wall:'#f4f6f5', slab:'#22aeb4', para:'#f4f6f5', post:'#c9efe9', col:'#f4f6f5', fascia:'#22aeb4'},
+  b3:{wall:'#43d3b6', slab:'#2cbc9f', para:'#47d9bb', post:'#9a4a3a', col:'#43d3b6', fascia:'#2cbc9f', tower:1},
+  b7:{allOpen:1, wall:'#cdeed6', slab:'#bde5c8', para:'#cdeed6', post:'#bde5c8', col:'#bde5c8', fascia:'#e3ece6', gable:'#9aa1a8', vent:1},
+  b4:{wall:'#f1f4f2', slab:'#f1f4f2', para:'#3d9a8b', post:'#f1f4f2', col:'#9fd8dc', fascia:'#3d9a8b', groundOpen:1, stripe:'#8fd3c3'},
+};
+function partGroup(def, all, r, front){
+  const W = (r[2]-r[0])*S, D = (r[3]-r[1])*S, ns = front === 's' || front === 'n';
+  const g = new THREE.Group();
+  g.position.set(px((r[0]+r[2])/2), 0, pz((r[1]+r[3])/2));
+  g.rotation.y = {s:0, n:Math.PI, e:Math.PI/2, w:-Math.PI/2}[front];
+  scene.add(g);
+  const add = (geo, color, x, y, z, floor, opts={}) => {
+    const m = new THREE.Mesh(geo, mat(new THREE.Color(color), opts)); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true;
+    m.userData = {bid:def.id, floor, base:new THREE.Color(color)}; g.add(m); PICK.push(m); all.push(m); return m;
+  };
+  const plane = (geo, material, x, y, z, floor, rotY=0) => {
+    const m = new THREE.Mesh(geo, material); m.position.set(x, y, z); m.rotation.y = rotY;
+    m.userData = {bid:def.id, floor}; g.add(m); all.push(m); return m;
+  };
+  g.updateMatrixWorld();
+  return {g, add, plane, L: ns ? W : D, Dp: ns ? D : W, box:(a,b,c) => new THREE.BoxGeometry(a,b,c)};
+}
+function buildCorridor(def, all){
+  const o = STYLES[def.style], Y0 = .1, fh = FH, n = def.floors; let topMax = 0;
+  def.parts.forEach((r, pi) => {
+    const {g, add, plane, L, Dp, box} = partGroup(def, all, r, def.fronts[pi]);
+    const addObj = m => { g.add(m); PICK.push(m); all.push(m); }; let top2 = 0;
+    const COR = 3, zF = Dp/2, rd = Dp - COR, zR = -Dp/2 + rd/2;
+    const bays = Math.max(4, Math.round(L/4.2)), bay = L/bays;
+    add(box(L, .2, Dp), '#d6d9d2', 0, Y0+.1, 0, 1);
+    if (o.allOpen){
+      for (let i = 0; i <= bays; i++) for (const z of [zF-.35, zF-COR, -Dp/2+.4]) add(box(.6, fh, .6), o.col, -L/2+i*bay, Y0+fh/2, z, 1);
+    } else if (o.groundOpen){
+      const bd = rd*.55; add(floorBox(L, fh, bd), o.wall, 0, Y0+fh/2, -Dp/2+bd/2, 1, {map:TEX});
+      for (let i = 0; i <= bays; i++) for (const z of [zF-.4, -Dp/2+bd+(Dp-bd)/2-1]) add(box(.6, fh, .6), o.col, -L/2+i*bay, Y0+fh/2, z, 1);
+    } else {
+      add(floorBox(L, fh, rd), o.wall, 0, Y0+fh/2, zR, 1, {map:TEX});
+      for (let i = 0; i <= bays; i++) add(box(.55, fh, .55), o.col, -L/2+i*bay, Y0+fh/2, zF-.35, 1);
+    }
+    for (let f = 2; f <= n; f++){
+      const y = Y0 + (f-1)*fh;
+      add(floorBox(L, fh-.06, rd), o.wall, 0, y+(fh-.06)/2, zR, f, {map:TEX});
+      add(box(L, .45, COR), o.slab, 0, y+.22, zF-COR/2, f);
+      add(box(L, 1.0, .22), o.para, 0, y+.95, zF-.11, f);
+      if (o.stripe) for (let i = 0; i < bays; i += 3) add(box(bay*1.2, .5, .05), o.stripe, -L/2+(i+.8)*bay, y+.95, zF+.03, f);
+      for (let i = 0; i <= bays; i++) add(box(.28, fh-1.45, .28), o.post, -L/2+i*bay, y+1.45+(fh-1.45)/2, zF-.15, f);
+    }
+    const top = Y0 + n*fh;
+    add(box(L+.8, .9, Dp+.8), o.fascia, 0, top+.45, 0, n+1);
+    if (o.gable){
+      const rf = gableRoof(L, Dp, Dp*.16, o.gable, .9); rf.position.y = top+.9; rf.castShadow = true;
+      rf.userData = {bid:def.id, floor:n+1}; addObj(rf); top2 = top + .9 + Dp*.16;
+    } else add(box(L+.4, .15, Dp+.4), '#d9dcdf', 0, top+.95, 0, n+1);
+    if (o.vent) for (const sx of [-1, 1]) plane(new THREE.PlaneGeometry(4.5, (n-1)*fh), ventMat('#eef6f1', '#b9d3c4', [4, 14]), sx*(L/2-2.6), Y0+fh+(n-1)*fh/2, zF+.05, 2);
+    if (o.tower){
+      const tw = 6.5, tx = L/2 - tw/2 - .5, th = n*fh + 1.6;
+      for (let f = 1; f <= n; f++) add(box(tw, fh, 4.2), o.wall, tx, Y0+(f-1)*fh+fh/2, zF-.9, f);
+      add(box(tw, 1.6, 4.2), o.wall, tx, top+.8, zF-.9, n+1);
+      plane(new THREE.PlaneGeometry(tw*.6, th*.75), ventMat('#43d3b6', '#e9fffa', [3, 10]), tx, Y0+th*.5, zF+1.22, 3);
+    }
+    topMax = Math.max(topMax, top + 1, top2);
+  });
+  return topMax;
+}
+/* ---------- อาคาร 5 อาคารกาญจนาภิเษก (9 ชั้น) ---------- */
+function buildB5(def, all){
+  const r = def.parts[0], Y0 = .1, fh = FH, n = def.floors;
+  const {g, add, plane, L, Dp, box} = partGroup(def, all, r, 'e');
+  const LIME = '#b4e766', LIME2 = '#97d84a', PALE = '#d3f0a6', BRICK = '#a9573f', zF = Dp/2;
+  add(box(L, .2, Dp), '#d6d9d2', 0, Y0+.1, 0, 1);
+  const bd = Dp*.55; add(floorBox(L, fh, bd), LIME, 0, Y0+fh/2, -Dp/2+bd/2, 1, {map:TEX});
+  const bays = Math.round(L/5), bay = L/bays;
+  for (let i = 0; i <= bays; i++) for (const z of [zF-.4, 0]) add(box(.7, fh, .7), LIME2, -L/2+i*bay, Y0+fh/2, z, 1);
+  for (let f = 2; f <= n; f++){
+    const y = Y0 + (f-1)*fh;
+    add(floorBox(L, fh-.06, Dp), LIME, 0, y+(fh-.06)/2, 0, f, {map:TEX});
+    add(box(L+.5, .32, Dp+.5), LIME2, 0, y+.16, 0, f);
+  }
+  // ห้องประชุมชั้น 3 : แผงครีบระแนงขาว + ป้ายชื่อ
+  const hW = L*.58, hY = Y0 + 2*fh, hH = fh*1.35;
+  add(box(hW, hH, 1.4), PALE, 0, hY+hH/2, zF+.7, 3);
+  for (let x = -hW/2+.6; x <= hW/2-.5; x += .85) add(box(.22, fh*1.05, .5), '#f7f8f4', x, hY+.15+fh*.525, zF+1.65, 3);
+  const sign = textPlane('อาคารกาญจนาภิเษก', hW*.6, 1.05, null, '#24402a');
+  sign.position.set(hW*.12, hY+hH-.55, zF+1.42); Object.assign(sign.userData, {bid:def.id, floor:3}); g.add(sign); all.push(sign);
+  const smallE = new THREE.Mesh(new THREE.CircleGeometry(.55, 32), emblemMat()); smallE.position.set(-hW*.24, hY+hH-.55, zF+1.43);
+  smallE.userData = {bid:def.id, floor:3}; g.add(smallE); all.push(smallE);
+  // ผนังอิฐแดงสองข้าง + ช่องลม
+  for (const sx of [-1, 1]){
+    add(box(3.6, 3*fh, .45), BRICK, sx*(hW/2+2.4), Y0+fh+1.5*fh, zF+.22, 3);
+    plane(new THREE.PlaneGeometry(4, 2.2), ventMat(PALE, '#7e9a5c', [6, 3]), sx*(hW/2+6.5), Y0+fh+fh*.6, zF+.02, 2);
+  }
+  // หลังคาแบน + โครงคานด้านบน
+  const top = Y0 + n*fh;
+  add(box(L+.8, .7, Dp+.8), LIME2, 0, top+.35, 0, n+1);
+  for (const sx of [-1, 1]) for (const k of [-.35, 0, .35]) add(box(.5, 2.6, .5), LIME, k*L, top+2, sx*(Dp/2-1.5), n+1);
+  for (const k of [-.35, 0, .35]) add(box(.45, .45, Dp-2), LIME, k*L, top+3.3, 0, n+1);
+  for (const sx of [-1, 1]) add(box(L*.75, .45, .45), LIME, 0, top+3.3, sx*(Dp/2-1.5), n+1);
+  return top + 3.6;
+}
+
+/* ---------- อาคาร 8-1 ตึกสูงสีเขียวมิ้นต์ ---------- */
+function buildTower8(def, all){
+  const Y0 = .1, fh = FH, n = def.floors;
+  const {g, add, box, L, Dp} = partGroup(def, all, def.parts[0], 'w');
+  const MINT = '#c6ebd8', M2 = '#a7d9c0';
+  for (let f = 1; f <= n; f++){
+    const y = Y0 + (f-1)*fh;
+    add(floorBox(L, fh-.06, Dp), MINT, 0, y+(fh-.06)/2, 0, f, {map:TEX});
+    if (f > 1) add(box(L+.5, .3, Dp+.5), M2, 0, y+.15, 0, f);
+    for (const sx of [-1, 1]) add(box(.8, fh, .8), M2, sx*(L/2-.2), y+fh/2, Dp/2+.1, f);
+  }
+  const top = Y0 + n*fh;
+  add(box(L+.5, 1.3, Dp+.5), M2, 0, top+.65, 0, n+1);
+  add(box(6, 3, 5), MINT, L/2-4, top+1.5, -Dp/4, n+1);
+  add(box(6.4, .3, 5.4), M2, L/2-4, top+3.1, -Dp/4, n+1);
+  return top + 3.3;
+}
+/* ---------- อาคาร 8-2, 8-3 อาคารชั้นเดียวหลังคาจั่ว ---------- */
+function buildHall(def, all){
+  const Y0 = .1, H = def.fh;
+  const {g, add, box, L, Dp} = partGroup(def, all, def.parts[0], 's');
+  const WALL = '#d3efe3', LOW = '#8fc9a0';
+  add(box(L, 1.3, Dp), LOW, 0, Y0+.65, 0, 1);
+  add(floorBox(L, H-1.3, Dp), WALL, 0, Y0+1.3+(H-1.3)/2, 0, 1, {map:TEX});
+  const rh = Dp*.42, rf = gableRoof(L, Dp, rh, '#6f6b68', 1);
+  rf.position.y = Y0 + H; rf.castShadow = true; rf.userData = {bid:def.id, floor:2}; g.add(rf); PICK.push(rf); all.push(rf);
+  // หน้าจั่วยกสูงสองข้าง
+  for (const sx of [-1, 1]){
+    const sh = new THREE.Shape(); sh.moveTo(-Dp/2, 0); sh.lineTo(Dp/2, 0); sh.lineTo(Dp*.12, rh+1.2); sh.lineTo(-Dp*.12, rh+1.2); sh.closePath();
+    const geo = new THREE.ExtrudeGeometry(sh, {depth:.5, bevelEnabled:false}); geo.translate(0, 0, -.25); geo.rotateY(Math.PI/2);
+    add(geo, WALL, sx*(L/2-.2), Y0+H, 0, 2);
+  }
+  // ทางเดินมีหลังคาด้านหน้า
+  add(box(L, .18, 2.6), '#b9bfc4', 0, Y0+3, Dp/2+1.3, 1);
+  for (let x = -L/2+.5; x <= L/2; x += 4.5) add(box(.25, 3, .25), '#e6ebe8', x, Y0+1.5, Dp/2+2.4, 1);
+  return Y0 + H + rh + 1.2;
+}
+function makeBuilding(def){
+  const fh = def.fh || FH, n = def.floors, all = [];
+  const base = new THREE.Color(def.color || KIND[def.kind]);
+  let roofTop;
+  if (def.custom === 'b6') roofTop = buildB6(def, all);
+  else if (def.custom === 'b1') roofTop = buildB1(def, all);
+  else if (def.custom === 'gym') roofTop = buildGym(def, all);
+  else if (def.custom === 'dome') roofTop = buildDome(def, all);
+  else if (def.custom === 'corr') roofTop = buildCorridor(def, all);
+  else if (def.custom === 'b5') roofTop = buildB5(def, all);
+  else if (def.custom === 'tower8') roofTop = buildTower8(def, all);
+  else if (def.custom === 'hall') roofTop = buildHall(def, all);
+  else {
+  for (let i = 0; i < n; i++){
+    for (const r of def.parts){
+      const w=(r[2]-r[0])*S, d=(r[3]-r[1])*S, cx=px((r[0]+r[2])/2), cz=pz((r[1]+r[3])/2);
+      const m = new THREE.Mesh(floorBox(w, fh-.06, d), mat(base.clone(), {map:TEX}));
+      m.position.set(cx, i*fh + (fh-.06)/2 + .1, cz); m.castShadow = m.receiveShadow = true;
+      m.userData = {bid:def.id, floor:i+1, base:base.clone()};
+      const e = new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry), new THREE.LineBasicMaterial({color:0x334155, transparent:true, opacity:.35}));
+      e.position.copy(m.position); e.userData = {bid:def.id, floor:i+1};
+      scene.add(m, e); PICK.push(m); all.push(m, e);
+    }
+  }
+  const top = n*fh + .1; roofTop = top;
+  for (const r of def.parts){
+    const w=(r[2]-r[0])*S, d=(r[3]-r[1])*S, cx=px((r[0]+r[2])/2), cz=pz((r[1]+r[3])/2);
+    let m;
+    if (def.roof === 'gable'){ const h = Math.min(w,d)*.28; m = gableRoof(w, d, h, def.roofC || '#8d98a5'); roofTop = Math.max(roofTop, top+h); }
+    else if (def.roof === 'arch'){ m = archRoof(w, d, def.flat || .4, def.kind === 'dome' ? '#d9dde2' : '#b7c0c9'); roofTop = Math.max(roofTop, top + (Math.min(w,d)/2)*(def.flat||.4)); }
+    else { m = new THREE.Mesh(new THREE.BoxGeometry(w+.5, .6, d+.5), mat('#a3acb6')); m.position.y = .3; roofTop = Math.max(roofTop, top+.6); }
+    m.position.x = cx; m.position.z = cz; m.position.y += top; m.castShadow = true;
+    m.userData = {bid:def.id, floor:n+1};
+    scene.add(m); PICK.push(m); all.push(m);
+  }
+  }
+  const r0 = def.labelAt || def.parts[0];
+  const lp = new THREE.Vector3(px((r0[0]+r0[2])/2), roofTop + 4, pz((r0[1]+r0[3])/2));
+  const lb = label(def.label || def.id, def.kind === 'comp' ? 'comp' : def.kind === 'dome' ? 'dome' : '', lp, () => select(def.id));
+  B[def.id] = {def, all, label:lb, fh, top:roofTop};
+}
+DEFS.forEach(makeBuilding);
+buildBridge();
+buildBridge14();
+// ทางเชื่อม อาคาร 4 ↔ อาคาร 5 ชั้น 3 และชั้น 4 (มุมทิศตะวันตกที่ติดกัน)
+(function(){
+  const x = px(712), zA = pz(300) - .3, zB = pz(310) + .3, len = zB - zA, zc = (zA+zB)/2;
+  const m = c => mat(c, {transparent:false});
+  const add = (geo, material, X, Y, Z) => { const o = new THREE.Mesh(geo, material); o.position.set(X, Y, Z); o.castShadow = o.receiveShadow = true; scene.add(o); return o; };
+  for (const f of [3, 4]){
+    const y = .1 + (f-1)*FH;
+    add(new THREE.BoxGeometry(4, .35, len), m('#d6dbd8'), x, y+.17, zc);
+    add(new THREE.BoxGeometry(4.2, .45, len), m('#97d84a'), x, y-.05, zc);
+    for (const s of [-1, 1]){
+      add(new THREE.BoxGeometry(.2, 1.05, len), m('#3d9a8b'), x+s*1.95, y+.7, zc);
+      add(new THREE.BoxGeometry(.15, FH-1.3, .15), m('#e5e7eb'), x+s*1.95, y+1.25+(FH-1.3)/2, zc);
+    }
+    add(new THREE.BoxGeometry(4.3, .3, len), m('#c3c8cc'), x, y+FH-.1, zc);
+  }
+})();
+// หลังคาโดมคลุมลานระหว่างอาคาร 1 กับอาคาร 7 (ระดับชั้น 3)
+(function(){
+  const xA = px(1010), xB = px(1098), zA = pz(295), zB = pz(320), y = .1 + 2*FH + 2.4;
+  const m = c => mat(c, {transparent:false});
+  const add = (geo, material, X, Y, Z) => { const o = new THREE.Mesh(geo, material); o.position.set(X, Y, Z); o.castShadow = o.receiveShadow = true; scene.add(o); return o; };
+  for (const z of [zA+.25, zB-.25]) add(new THREE.BoxGeometry(xB-xA, .45, .45), m('#8b9196'), (xA+xB)/2, y, z);
+  for (let x = xA+1; x <= xB; x += 7.5) add(new THREE.BoxGeometry(.25, .25, zB-zA), m('#8b9196'), x, y+.1, (zA+zB)/2);
+  const roof = archRoof(xB-xA, zB-zA, .32, '#d3d8dc'); roof.material.transparent = false;
+  roof.position.set((xA+xB)/2, y+.2, (zA+zB)/2); roof.castShadow = true; scene.add(roof);
+})();
+TOILETS.forEach(r => {
+  const w=(r[2]-r[0])*S, d=(r[3]-r[1])*S;
+  const m = new THREE.Mesh(floorBox(w, 3.2, d), mat(KIND.wc, {map:TEX, transparent:false}));
+  m.position.set(px((r[0]+r[2])/2), 1.7, pz((r[1]+r[3])/2)); m.castShadow = m.receiveShadow = true; scene.add(m);
+  label('ห้องน้ำ', 'small', new THREE.Vector3(m.position.x, 5.5, m.position.z));
+});
+
+// สระน้ำ + แท่นเสาธง (หน้าอาคาร 2 ปลายโดมด้านตะวันออก)
+(function(){
+  const X0 = px(937.6), X1 = px(1001), Z0 = pz(161), Z1 = pz(296);
+  const cx = (X0+X1)/2, cz = (Z0+Z1)/2, W = X1-X0, D = Z1-Z0;
+  const sm = (c, o={}) => new THREE.MeshStandardMaterial({color:c, roughness:.85, ...o});
+  const put = (geo, material, x, y, z, shadow=true) => { const m = new THREE.Mesh(geo, material); m.position.set(x, y, z); m.castShadow = shadow; m.receiveShadow = true; scene.add(m); return m; };
+  const rrect = (w, d, r) => { const sh = new THREE.Shape(), x = -w/2, y = -d/2;
+    sh.moveTo(x+r, y); sh.lineTo(x+w-r, y); sh.quadraticCurveTo(x+w, y, x+w, y+r); sh.lineTo(x+w, y+d-r); sh.quadraticCurveTo(x+w, y+d, x+w-r, y+d);
+    sh.lineTo(x+r, y+d); sh.quadraticCurveTo(x, y+d, x, y+d-r); sh.lineTo(x, y+r); sh.quadraticCurveTo(x, y, x+r, y); return sh; };
+  // ลานปูอิฐรอบสระ
+  put(new THREE.BoxGeometry(W, .12, D), sm('#cdb59f'), cx, .14, cz, false);
+  put(new THREE.BoxGeometry(.6, .7, D), sm('#c9cdca'), X0 + .25, .45, cz);
+  // ขอบสระ
+  const pw = W - 2.6, pd = D - 4, PX = X0 + .5 + pw/2, outer = rrect(pw + 1, pd + 1, 3), hole = rrect(pw, pd, 2.6);
+  outer.holes.push(hole);
+  const rim = new THREE.ExtrudeGeometry(outer, {depth:.75, bevelEnabled:false}); rim.rotateX(-Math.PI/2);
+  put(rim, sm('#c9cdca'), PX, .15, cz);
+  // ผิวน้ำ
+  const wg = new THREE.ShapeGeometry(rrect(pw, pd, 2.6)); wg.rotateX(-Math.PI/2);
+  put(wg, sm('#2f5444', {roughness:.15, metalness:.25}), PX, .55, cz, false);
+  // กระถางต้นไม้รอบขอบ
+  const potM = sm('#b9bdbb'), leafM = sm('#5f9a4c', {flatShading:true});
+  const pots = [];
+  for (let x = -pw/2 + 8; x <= pw/2 - 2; x += 2.6) pots.push([x, -pd/2 - 1.1], [x, pd/2 + 1.1]);
+  for (let z = -pd/2 + 3; z <= pd/2 - 2; z += 2.6) pots.push([pw/2 + 1.1, z]);
+  for (const [x, z] of pots){
+    put(new THREE.BoxGeometry(1.3, .55, .7), potM, PX + x, .45, cz + z);
+    put(new THREE.IcosahedronGeometry(.45, 0), leafM, PX + x, .95, cz + z);
+  }
+  // น้ำพุ
+  put(new THREE.CylinderGeometry(.5, .6, .3, 16), sm('#b08a5e'), cx + 2, .62, cz + 1);
+  const spray = put(new THREE.ConeGeometry(.35, 3.2, 12, 1, true), new THREE.MeshStandardMaterial({color:'#eaf6ff', transparent:true, opacity:.55, roughness:.1}), cx + 2, 2.2, cz + 1, false);
+  spray.rotation.x = Math.PI;
+  // ม้านั่ง + ทางเดินฝั่งตะวันออก
+  for (let z = -pd/2 + 2; z < pd/2; z += 4.5){
+    put(new THREE.BoxGeometry(.6, .12, 2.2), sm('#6b4a33'), X1 - .7, .62, cz + z);
+    put(new THREE.BoxGeometry(.12, .6, 2.2), sm('#6b4a33'), X1 - .4, .9, cz + z);
+    for (const dz of [-.9, .9]) put(new THREE.BoxGeometry(.5, .5, .15), sm('#8a8f94'), X1 - .7, .35, cz + z + dz);
+  }
+  // ศาลพระภูมิสีขาว (ฝั่งทิศเหนือของสระ)
+  { const sx = cx + 3, sz = Z0 + 1.2;
+    put(new THREE.BoxGeometry(.9, 1.6, .9), sm('#f3f1ea'), sx, .95, sz);
+    put(new THREE.BoxGeometry(1.5, .3, 1.5), sm('#f3f1ea'), sx, 1.9, sz);
+    put(new THREE.BoxGeometry(1.1, 1.1, 1.1), sm('#f7f5ef'), sx, 2.6, sz);
+    put(new THREE.ConeGeometry(.9, 1.8, 4), sm('#e9e4d6', {flatShading:true}), sx, 4.05, sz).rotation.y = Math.PI/4; }
+  // ต้นไม้ใหญ่ริมสระ
+  for (const [x, z, s_] of [[X1 - 1.5, Z1 - 2, 1.6], [X1 - 2, Z0 + 3, 1.4], [X0 + 8, Z1 - 1.2, 1.2]]){
+    put(new THREE.CylinderGeometry(.35*s_, .5*s_, 4*s_, 7), trunkM, x, 2*s_, z);
+    put(new THREE.IcosahedronGeometry(3*s_, 1), leafMs[0], x, 5.2*s_, z).scale.y = .7;
+  }
+  // แท่นเสาธงทรงกลม (ยื่นลงในสระ ด้านหน้าปลายโดม)
+  const fx = X0 + 4.2, fz = pz(246);
+  put(new THREE.CylinderGeometry(3.4, 3.4, 1.1, 40), sm('#8f989d'), fx, 1.0, fz);
+  put(new THREE.CylinderGeometry(3.1, 3.1, .12, 40), sm('#7a5a3a'), fx, 1.6, fz, false);
+  for (let k = 0; k < 4; k++) put(new THREE.CylinderGeometry(.3, .3, .6, 8), sm('#7d8589'), fx + Math.cos(k*1.57+.78)*2.2, .35, fz + Math.sin(k*1.57+.78)*2.2);
+  for (let k = 0; k < 7; k++) put(new THREE.IcosahedronGeometry(.75, 0), leafMs[k % 3], fx + Math.cos(k*.9)*2.2, 2.1, fz + Math.sin(k*.9)*2.2);
+  const poleM = sm('#e8edf0', {metalness:.5, roughness:.35});
+  const flagTex = (draw) => { const c = document.createElement('canvas'); c.width = 90; c.height = 60; const g = c.getContext('2d'); draw(g); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
+  // เสาธงชาติต้นกลาง
+  put(new THREE.CylinderGeometry(.11, .17, 18, 10), poleM, fx, 1.6 + 9, fz);
+  const thai = flagTex(g => [['#a51931',0,10],['#f4f5f8',10,10],['#2d2a4a',20,20],['#f4f5f8',40,10],['#a51931',50,10]].forEach(([col,y,h]) => { g.fillStyle = col; g.fillRect(0,y,90,h); }));
+  put(new THREE.PlaneGeometry(3.6, 2.4), new THREE.MeshStandardMaterial({map:thai, side:THREE.DoubleSide}), fx, 17.6, fz + 1.85, false).rotation.y = Math.PI/2;
+  // ธงสีรอบเสาหลัก
+  const cols = ['#f2c21b', '#7b4bb3', '#1f9a48', '#e84a9a', '#57b6ea'];
+  cols.forEach((col, k) => {
+    const a = -1.2 + k*.6, x = fx + Math.cos(a)*2.6, z = fz + Math.sin(a)*2.6;
+    put(new THREE.CylinderGeometry(.06, .09, 8, 8), poleM, x, 1.6 + 4, z);
+    const t = flagTex(g => { g.fillStyle = col; g.fillRect(0,0,90,60); if (col === '#1f9a48'){ g.fillStyle = '#fff'; g.fillRect(0,0,45,60); } });
+    put(new THREE.PlaneGeometry(.9, 1.6), new THREE.MeshStandardMaterial({map:t, side:THREE.DoubleSide}), x, 1.6 + 7.1, z + .45, false).rotation.y = Math.PI/2;
+  });
+  label('เสาธง', 'flag', new THREE.Vector3(fx, 21, fz));
+  label('สระน้ำ', 'flag', new THREE.Vector3(cx + 2, 4.5, cz + 4));
+})();
+
+// คลินิก Thanyarat + ศาลาหลังคาเขียว (ระหว่างอาคาร 7 กับ 8)
+(function(){
+  const sm = (c, o={}) => new THREE.MeshStandardMaterial({color:c, roughness:.8, ...o});
+  const put = (geo, material, x, y, z) => { const m = new THREE.Mesh(geo, material); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; scene.add(m); return m; };
+  // คลินิก : ห้องกระจกสีขาว หลังคาเพิงแบน
+  const cx = px(1018), cz = pz(236), cw = 9, cd = 4;
+  put(new THREE.BoxGeometry(cw, .7, cd), sm('#e9ecea'), cx, .45, cz);
+  put(new THREE.BoxGeometry(cw-.3, 2.3, cd-.3), sm('#9cc3d6', {roughness:.15, metalness:.3, transparent:true, opacity:.75}), cx, 1.95, cz);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) put(new THREE.BoxGeometry(.25, 2.4, .25), sm('#f4f6f5'), cx+sx*(cw/2-.15), 2, cz+sz*(cd/2-.15));
+  put(new THREE.BoxGeometry(cw+1.2, .25, cd+1.4), sm('#f4f6f5'), cx, 3.3, cz+.3);
+  const sign = textPlane('Clinic Thanyarat', 3.4, .7, '#ffffff', '#1f9a48'); sign.position.set(cx+cw/2-2.3, 2.6, cz+cd/2+.02); scene.add(sign);
+  label('คลินิก', 'flag', new THREE.Vector3(cx, 5.5, cz));
+  // ศาลาหลังคากระเบื้องเขียว
+  for (const x of [px(1040), px(1062), px(1084)]){
+    const z = pz(237.5), w = 6, d = 3.6;
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) put(new THREE.BoxGeometry(.3, 2.6, .3), sm('#bfe6c8'), x+sx*(w/2-.3), 1.4, z+sz*(d/2-.3));
+    const roof = put(new THREE.ConeGeometry(1, 1, 4), sm('#3f8a66', {flatShading:true}), x, 3.35, z);
+    roof.rotation.y = Math.PI/4; roof.scale.set(w*.78, 1.5, d*.78);
+    for (const sz of [-1, 1]) put(new THREE.BoxGeometry(w-1.2, .12, .45), sm('#f1f3f2'), x, .55, z+sz*.9);
+    put(new THREE.BoxGeometry(w-1.6, .1, .9), sm('#f1f3f2'), x, .85, z);
+  }
+})();
+
+// ถนนทางเข้าจากประตูโรงเรียนถึงอาคาร 1
+(function(){
+  const sm = (c, o={}) => new THREE.MeshStandardMaterial({color:c, roughness:.9, ...o});
+  const put = (geo, material, x, y, z, sh=false) => { const m = new THREE.Mesh(geo, material); m.position.set(x, y, z); m.receiveShadow = true; m.castShadow = sh; scene.add(m); return m; };
+  const xL = px(957), xR = px(988), zN = pz(363), zS = pz(566), xc = (xL+xR)/2, zc = (zN+zS)/2, len = zS - zN;
+  put(new THREE.BoxGeometry(xR-xL, .06, len), sm('#cfc8bd'), xc, .2, zc);
+  for (const ex of [xL+.4, xR-.4]) put(new THREE.BoxGeometry(.15, .02, len), sm('#e3a04a'), ex, .24, zc);
+  // รั้วโปร่ง + ไม้พุ่มริมถนนฝั่งตะวันออก
+  const fx = xR + 1.2;
+  put(new THREE.BoxGeometry(.9, .8, len - 6), sm('#5f9a4c', {flatShading:true}), fx, .55, zc + 2, true);
+  put(new THREE.BoxGeometry(.1, 2.2, len - 6), sm('#dfe4e6', {transparent:true, opacity:.55}), fx + .9, 1.3, zc + 2);
+  for (let z = zN + 6; z < zS - 3; z += 3.5) put(new THREE.ConeGeometry(.55, 2.2, 7), sm('#3f7d3a', {flatShading:true}), fx, 1.9, z, true);
+  // โรงจอดรถหลังคาเหล็ก
+  const px0 = fx + 1.6, pw = 12, pz0 = pz(395), pl = pz(560) - pz0;
+  for (let z = pz0 + 1; z <= pz0 + pl; z += 6) put(new THREE.BoxGeometry(.3, 3, .3), sm('#7a8287'), px0 + pw - 1, 1.5, z, true);
+  const roof = put(new THREE.BoxGeometry(pw, .15, pl), sm('#9aa3ab', {metalness:.4}), px0 + pw/2, 3.1, pz0 + pl/2, true);
+  roof.rotation.z = .06;
+})();
+
+// รั้วหน้าโรงเรียน ประตู และป้ายชื่อโรงเรียน (ริมถนนใหญ่)
+(function(){
+  const ZF = pz(566.5), MINT = '#a6e6dd', CREAM = '#f3ecc6', DG = '#5c6670', LG = '#c7ced3';
+  const sm = (c, o={}) => new THREE.MeshStandardMaterial({color:c, roughness:.75, ...o});
+  const put = (geo, material, x, y, z, ry=0) => { const m = new THREE.Mesh(geo, material); m.position.set(x, y, z); m.rotation.y = ry; m.castShadow = m.receiveShadow = true; scene.add(m); return m; };
+  const ext = (pts, depth) => { const sh = new THREE.Shape(); sh.moveTo(pts[0][0], pts[0][1]); pts.slice(1).forEach(q => sh.lineTo(q[0], q[1])); sh.closePath();
+    const g = new THREE.ExtrudeGeometry(sh, {depth, bevelEnabled:false}); g.translate(0, 0, -depth/2); return g; };
+  const canvasTex = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); draw(g, w, h);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; t.userData = {draw:() => { g.clearRect(0,0,w,h); draw(g, w, h); t.needsUpdate = true; }}; LATE_TEX.push(t); return t; };
+  const steel = canvasTex(256, 128, (g, w, h) => { g.strokeStyle = '#dfe5e9'; g.lineWidth = 6; g.strokeRect(3, 8, w-6, h-16);
+    for (let x = 20; x < w; x += 22) { g.beginPath(); g.moveTo(x, 8); g.lineTo(x, h-8); g.stroke(); }
+    g.lineWidth = 4; for (let x = 31; x < w; x += 44) { g.beginPath(); g.arc(x, h*.55, 9, 0, 7); g.stroke(); } });
+  steel.wrapS = THREE.RepeatWrapping;
+  const steelMat = rep => { const t = steel.clone(); t.repeat.x = rep; t.needsUpdate = true; return new THREE.MeshStandardMaterial({map:t, transparent:true, alphaTest:.3, side:THREE.DoubleSide, metalness:.6, roughness:.3}); };
+  // เสาสีมิ้นต์หัวแหลม + ปีกเฉียง
+  const pillar = (x, h=4.6, flip=1) => {
+    put(ext([[-.7,0],[.7,0],[.7,h],[0,h+.9],[-.7,h]], 1.1), sm(MINT), x, 0, ZF);
+    put(ext([[0,0],[1.5,0],[0,h*.78]], .5), sm(MINT), x + flip*.7, 0, ZF+.2, flip > 0 ? 0 : Math.PI);
+    put(new THREE.BoxGeometry(1.5, .9, 1.2), sm(DG), x, .45, ZF);
+  };
+  const xW = px(700), xE = px(1125), gL = px(955), gR = px(990);
+  const segs = [[xW, px(872)], [px(948), gL], [gR, xE]];
+  for (const [a, b] of segs){
+    const L = b - a, xc = (a+b)/2;
+    put(new THREE.BoxGeometry(L, .9, .55), sm(DG), xc, .45, ZF);
+    put(new THREE.BoxGeometry(L, .14, .62), sm(LG), xc, .92, ZF);
+    put(new THREE.PlaneGeometry(L, 1.7), steelMat(L/2.4), xc, 1.85, ZF);
+    for (let x = a; x <= b + .1; x += Math.max(6, L/Math.max(1, Math.round(L/9)))) pillar(x);
+  }
+  // เสาประตูใหญ่ + บานประตูสแตนเลส
+  pillar(gL - .2, 6, -1); pillar(gR + .2, 6, 1);
+  put(new THREE.PlaneGeometry(6, 1.9), steelMat(2.5), gL + 3.2, 1.05, ZF - .9, .5);
+  put(new THREE.PlaneGeometry(6, 1.9), steelMat(2.5), gR - 3.2, 1.05, ZF - .9, -.5);
+  // ป้ายโรงเรียน (หน้าอาคาร 9)
+  const sx0 = px(872), sx1 = px(948), scx = (sx0+sx1)/2, SW = sx1 - sx0;
+  put(new THREE.BoxGeometry(SW, 1.1, 1.6), sm(LG), scx, .55, ZF);
+  put(new THREE.BoxGeometry(SW, .5, 1.75), sm(DG), scx, .25, ZF);
+  // แผ่นครีมทรงเฉียงสองข้าง
+  for (const [dx, h, w] of [[-SW/2+1.2, 5.4, 2], [-SW/2+3.1, 6.6, 1.6], [SW/2-3.4, 6.2, 1.8], [SW/2-1.4, 5, 1.6]])
+    put(ext([[-w/2,0],[w/2,0],[w/2*.6,h],[-w/2,h*.86]], .8), sm(CREAM), scx+dx, 1.1, ZF-.1);
+  // แผ่นหินแกรนิตรูปหนังสือเปิด + ตัวอักษรทอง
+  const bw = 9, bh = 3.6, bx = scx - 1.5;
+  const book = new THREE.Shape(); book.moveTo(-bw/2, .5); book.lineTo(-bw/2+.4, bh); book.quadraticCurveTo(-bw/4, bh+.35, 0, bh-.05); book.quadraticCurveTo(bw/4, bh+.35, bw/2-.4, bh);
+  book.lineTo(bw/2, .5); book.quadraticCurveTo(bw/4, 1.3, 0, .2); book.quadraticCurveTo(-bw/4, 1.3, -bw/2, .5);
+  const bg = new THREE.ExtrudeGeometry(book, {depth:.35, bevelEnabled:false}); bg.translate(0, 0, -.175);
+  put(bg, sm('#2a3140', {roughness:.25, metalness:.3}), bx, 1.15, ZF+.25);
+  const signTex = canvasTex(1024, 410, (g, w, h) => { g.textAlign = 'center'; g.textBaseline = 'middle';
+    const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#f6e7a9'); gr.addColorStop(.5, '#c9a64a'); gr.addColorStop(1, '#f1df9a'); g.fillStyle = gr;
+    g.font = '800 150px Sarabun, sans-serif'; g.fillText('โรงเรียนธัญรัตน์', w/2, h*.42);
+    g.font = '800 70px Georgia, serif'; g.fillText('THANYARAT SCHOOL', w/2, h*.8); });
+  put(new THREE.PlaneGeometry(bw*.84, bw*.84*410/1024), new THREE.MeshBasicMaterial({map:signTex, transparent:true}), bx, 1.15+bh*.55, ZF+.44);
+  // ขอบหนังสือสีขาวด้านบน
+  put(new THREE.BoxGeometry(bw*.92, .18, .5), sm('#f7f7f4'), bx, 1.15+bh+.08, ZF+.3);
+  // ตราโรงเรียนทรงใบเสมาด้านบน
+  const emb = new THREE.Shape(); emb.moveTo(-1.1, 0); emb.quadraticCurveTo(-1.3, 1.6, 0, 2.7); emb.quadraticCurveTo(1.3, 1.6, 1.1, 0); emb.closePath();
+  const eg = new THREE.ExtrudeGeometry(emb, {depth:.2, bevelEnabled:false}); eg.translate(0, 0, -.1);
+  put(eg, sm('#2e4a86'), bx, 1.15+bh+.15, ZF+.15);
+  const em = new THREE.Mesh(new THREE.CircleGeometry(.75, 32), emblemMat()); em.position.set(bx, 1.15+bh+1.25, ZF+.27); scene.add(em);
+  // แผ่นคำขวัญหินแกรนิต
+  const motto = canvasTex(512, 256, (g, w, h) => { g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#d9b860';
+    g.font = '700 46px Sarabun, sans-serif'; g.fillText('ปัญญาเป็นเครื่องเพิ่มพูน', w/2, h*.38); g.fillText('เกียรติคุณและชื่อเสียง', w/2, h*.66); });
+  put(new THREE.BoxGeometry(4, 2.6, .3), sm('#22262c', {roughness:.25, metalness:.3}), scx + SW/2 - 6.5, 2.4, ZF+.1);
+  put(new THREE.PlaneGeometry(3.8, 1.9), new THREE.MeshBasicMaterial({map:motto, transparent:true}), scx + SW/2 - 6.5, 2.4, ZF+.26);
+  // จอ LED บนโครงเหล็กด้านหลัง
+  for (const dx of [-1.6, 1.6]) put(new THREE.BoxGeometry(.25, 6, .25), sm('#e7ebee'), scx + SW/2 - 6.5 + dx, 3, ZF - 2);
+  put(new THREE.BoxGeometry(5.5, 3.2, .3), sm('#3b4250', {roughness:.3, metalness:.4}), scx + SW/2 - 6.5, 7.2, ZF - 2);
+  // ศาลพระภูมิสีทอง (หลังรั้ว ข้างประตู)
+  const GOLD = sm('#d9b23a', {metalness:.65, roughness:.3});
+  const spx = gL - 5, spz = ZF - 4;
+  put(new THREE.BoxGeometry(2.2, .5, 2.2), sm('#e8e3d6'), spx, .25, spz);
+  put(new THREE.CylinderGeometry(.3, .4, 1.6, 8), GOLD, spx, 1.3, spz);
+  put(new THREE.BoxGeometry(1.5, .25, 1.5), GOLD, spx, 2.2, spz);
+  put(new THREE.BoxGeometry(1.1, 1.1, 1.1), GOLD, spx, 2.85, spz);
+  for (let k = 0; k < 3; k++) put(new THREE.ConeGeometry(.9 - k*.22, .7, 4), GOLD, spx, 3.7 + k*.55, spz, Math.PI/4);
+  put(new THREE.ConeGeometry(.12, 1.1, 8), GOLD, spx, 5.6, spz);
+  label('ป้ายโรงเรียน', 'flag', new THREE.Vector3(bx, 8.5, ZF));
+})();
+
+// ===== ที่จอดรถในโรงเรียน + เส้นทางเดินรถทางเดียว =====
+(function(){
+  const sm = (c, o={}) => new THREE.MeshStandardMaterial({color:c, roughness:.9, ...o});
+  const put = (geo, m, x, y, z, sh=false) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.receiveShadow = true; o.castShadow = sh; scene.add(o); return o; };
+  const W = (a, b) => px(b) - px(a), Dz = (a, b) => pz(b) - pz(a);
+  const white = sm('#ffffff'), asph = sm('#5b636d'), lotM = sm('#8d949b');
+  let sd = 31; const r = () => (sd = sd*16807 % 2147483647)/2147483647;
+  const CARC = ['#f5f6f7','#f5f6f7','#d7dadd','#b9bec4','#2b2f35','#1c1f24','#8a1f24','#3a5f8a','#c9ccd0'];
+  const car = (x, z, rot) => {
+    const g = new THREE.Group(), c = CARC[Math.floor(r()*CARC.length)];
+    const b = new THREE.Mesh(new THREE.BoxGeometry(1.8, .75, 4.3), sm(c, {roughness:.35, metalness:.4})); b.position.y = .55;
+    const t = new THREE.Mesh(new THREE.BoxGeometry(1.6, .6, 2.2), sm('#2a3440', {roughness:.2, metalness:.5})); t.position.set(0, 1.2, -.2);
+    b.castShadow = t.castShadow = true; g.add(b, t); g.position.set(x, .2, z); g.rotation.y = rot; scene.add(g);
+  };
+  // ลานจอดรถ : stalls ตั้งฉากกับด้านยาว (parallel = จอดขนานเป็นแถวเดียว)
+  const lot = (x0, y0, x1, y1, name, opt={}) => {
+    const w = W(x0, x1), d = Dz(y0, y1), cx = (px(x0)+px(x1))/2, cz = (pz(y0)+pz(y1))/2;
+    put(new THREE.BoxGeometry(w, .08, d), lotM, cx, .14, cz);
+    const horiz = w >= d, L = horiz ? w : d, Dp = horiz ? d : w;
+    if (opt.parallel){
+      for (let a = -L/2 + 3.2; a < L/2 - 2.5; a += 6.2){
+        const [x, z] = horiz ? [cx + a, cz] : [cx, cz + a];
+        put(new THREE.BoxGeometry(horiz ? .12 : 2.2, .02, horiz ? 2.2 : .12), white, horiz ? x + 3.1 : x, .2, horiz ? z : z + 3.1);
+        if (r() < (opt.fill ?? .7)) car(x, z, horiz ? Math.PI/2 : 0);
+      }
+    } else {
+      const rows = Math.max(1, Math.floor(Dp/5.4));
+      for (let k = 0; k < rows; k++){
+        const off = -Dp/2 + (k + .5)*Dp/rows;
+        for (let a = -L/2 + 1.3; a < L/2 - 1; a += 2.6){
+          const [x, z] = horiz ? [cx + a, cz + off] : [cx + off, cz + a];
+          put(new THREE.BoxGeometry(horiz ? .1 : 4.6, .02, horiz ? 4.6 : .1), white, horiz ? x - 1.3 : x, .2, horiz ? z : z - 1.3);
+          if (r() < (opt.fill ?? .7)) car(x, z, horiz ? (r() < .5 ? 0 : Math.PI) : (r() < .5 ? Math.PI/2 : -Math.PI/2));
+        }
+      }
+    }
+    if (name) label(name, 'flag', new THREE.Vector3(cx, 3.2, cz));
+  };
+  lot(992, 366, 1098, 393, 'ที่จอดรถหน้าอาคาร 1');
+  lot(993, 398, 1027, 558, 'ที่จอดรถข้างอาคาร 6 (ฝั่งตะวันออก)', {fill:.8});
+  lot(866, 400, 887, 514, 'ที่จอดรถข้างอาคาร 6 (ฝั่งตะวันตก)');
+  lot(870, 528, 954, 539, 'ที่จอดรถหน้าอาคาร 9', {parallel:1});
+  // ถนนวนรอบอาคาร 6 (ทางเดียว)
+  const road = (x0, y0, x1, y1) => put(new THREE.BoxGeometry(W(x0, x1), .1, Dz(y0, y1)), asph, (px(x0)+px(x1))/2, .15, (pz(y0)+pz(y1))/2);
+  road(888, 386, 957, 399);   // ทิศเหนือของอาคาร 6
+  road(888, 386, 906, 528);   // หลังอาคาร 6 (ตะวันตก)
+  road(888, 515, 957, 528);   // ระหว่างอาคาร 6 กับอาคาร 9
+  // ลูกศรบนผิวถนน
+  const arrowGeo = (() => { const s = new THREE.Shape(); s.moveTo(-.35, -1.4); s.lineTo(.35, -1.4); s.lineTo(.35, .2); s.lineTo(.9, .2); s.lineTo(0, 1.4); s.lineTo(-.9, .2); s.lineTo(-.35, .2); s.closePath();
+    const g = new THREE.ShapeGeometry(s); g.rotateX(-Math.PI/2); return g; })();
+  const arrow = (x, y, dirDeg) => { const m = put(arrowGeo, white, px(x), .23, pz(y)); m.rotation.y = dirDeg*Math.PI/180; };
+  // ทางเข้า (ฝั่งหน้าอาคาร 6) : ขาเข้าวิ่งขึ้นเหนือ
+  for (const y of [548, 500, 450, 410]) arrow(y > 528 ? 980 : 972, y, 0);
+  // วนซ้าย → หลังอาคาร 6 ลงใต้ → หน้าอาคาร 9 ไปตะวันออก
+  for (const x of [940, 915]) arrow(x, 392.5, 90);
+  for (const y of [420, 460, 500]) arrow(897, y, 180);
+  for (const x of [915, 940]) arrow(x, 521.5, -90);
+  // ทางออก : ครึ่งตะวันตกของถนนช่วงหน้าประตู วิ่งลงใต้
+  arrow(965, 548, 180);
+  put(new THREE.BoxGeometry(.15, .03, Dz(528, 566)), sm('#f2c230'), px(972.5), .24, (pz(528)+pz(566))/2);   // เส้นแบ่งเข้า-ออก
+  // ป้ายห้ามเข้า (ตรงทางออกฝั่งตะวันตก)
+  { const x = px(955), z = pz(560);
+    put(new THREE.CylinderGeometry(.06, .06, 2.2, 8), sm('#8a9096'), x, 1.1, z);
+    const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+    g.fillStyle = '#d62828'; g.beginPath(); g.arc(64, 64, 62, 0, 7); g.fill(); g.fillStyle = '#fff'; g.fillRect(18, 52, 92, 24);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+    const sg = put(new THREE.CircleGeometry(.5, 24), new THREE.MeshBasicMaterial({map:t, side:THREE.DoubleSide}), x, 2.4, z + .05); }
+  label('ทางเข้า ↑ (เดินรถทางเดียว)', 'gate', new THREE.Vector3(px(980), 1.5, pz(430)));
+  label('ทางออก ↓', 'gate', new THREE.Vector3(px(963), 1.5, pz(540)));
+  // รถวิ่งตามเส้นทาง : เข้าประตู → ขึ้นเหนือ → วนหลังอาคาร 6 → หน้าอาคาร 9 → ออกประตู
+  const path = [[980,566],[980,392.5],[897,392.5],[897,521.5],[965,521.5],[965,566]].map(([x, y]) => new THREE.Vector3(px(x), .2, pz(y)));
+  const segs = []; let total = 0;
+  for (let i = 1; i < path.length; i++){ const l = path[i].distanceTo(path[i-1]); segs.push([path[i-1], path[i], l]); total += l; }
+  const movers = [0, .25, .5, .75].map(() => { const g = new THREE.Group(), c = CARC[Math.floor(r()*CARC.length)];
+    const b = new THREE.Mesh(new THREE.BoxGeometry(1.8, .75, 4.3), sm(c, {roughness:.35, metalness:.4})); b.position.y = .55;
+    const t = new THREE.Mesh(new THREE.BoxGeometry(1.6, .6, 2.2), sm('#2a3440')); t.position.set(0, 1.2, -.2); b.castShadow = true; g.add(b, t); scene.add(g); return g; });
+  const t0 = performance.now();
+  (function drive(now){
+    const base = ((now - t0)/1000*4) % total;
+    movers.forEach((g, i) => {
+      let d = (base + i*total/movers.length) % total;
+      for (const [a, b, l] of segs){ if (d <= l){ g.position.lerpVectors(a, b, d/l); g.rotation.y = Math.atan2(b.x - a.x, b.z - a.z); break; } d -= l; }
+    });
+    requestAnimationFrame(drive);
+  })(t0);
+})();
+
+// หมุดจุดลงทะเบียน
+const regPos = new THREE.Vector3(px(928.5), B['6'].top + .1, pz(458));
+(function(){
+  const g = new THREE.Group();
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(1.1, 3, 16), mat('#e53935', {transparent:false})); cone.rotation.x = Math.PI; cone.position.y = 1.5;
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(1.4, 20, 16), mat('#e53935', {transparent:false})); ball.position.y = 3.6;
+  g.add(cone, ball); g.position.copy(regPos); scene.add(g);
+  label('จุดลงทะเบียน', 'reg', regPos.clone().add(new THREE.Vector3(0, 8, 0)), () => select('6', 1, 'reg1'));
+  regPin = g;
+})();
+var regPin;
+label('ทางเข้าโรงเรียน', 'gate', new THREE.Vector3(px(972), 1.5, pz(590)));
+
+// หมุดตำแหน่งห้อง
+const pin = new THREE.Group();
+{
+  const m = mat('#ff6a00', {transparent:false, emissive:'#7a2c00'});
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(.9, 2.6, 16), m); cone.rotation.x = Math.PI; cone.position.y = 1.3;
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(1.15, 20, 16), m); ball.position.y = 3.2;
+  const ring = new THREE.Mesh(new THREE.RingGeometry(1.4, 2.1, 32), new THREE.MeshBasicMaterial({color:'#ff6a00', transparent:true, opacity:.6, side:THREE.DoubleSide}));
+  ring.rotation.x = -Math.PI/2; ring.position.y = .05; pin.userData.ring = ring;
+  pin.add(cone, ball, ring); pin.visible = false; scene.add(pin);
+}
+
+/* ================= การเลือก / ไฮไลต์ ================= */
+let roofHidden = false;
+let sel = {b:null, f:null, room:null}, hover = null, tab = 'ev';
+function setOp(o, op){
+  o.material.opacity = o.isLineSegments ? op * .35 : op;
+  o.material.depthWrite = op > .99;
+  o.visible = op > .01 && !(o.userData.hideable && roofHidden);
+}
+function applyState(){
+  for (const id in B){
+    const b = B[id], isSel = sel.b === id, dim = sel.b && !isSel;
+    for (const o of b.all){
+      const f = o.userData.floor; let op = 1, hl = false;
+      if (dim) op = sel.f ? .16 : .45;
+      else if (isSel && sel.f){ if (f > sel.f) op = .07; else if (f === sel.f) hl = true; }
+      setOp(o, op);
+      if (o.isMesh && o.material.emissive){
+        if (o.userData.base) o.material.color.copy(hl ? HL : o.userData.base);
+        o.material.emissive.setHex(hl ? 0x4a1d00 : (hover === id || (isSel && !sel.f)) ? 0x262626 : 0);
+      }
+    }
+    b.label.element.classList.toggle('dim', !!dim);
+    b.label.element.classList.toggle('sel', isSel);
+  }
+  renderer.domElement.style.cursor = hover ? 'pointer' : 'grab';
+}
+function updatePin(){
+  pin.visible = false;
+  if (!sel.b || !sel.f || !sel.room) return;
+  const b = B[sel.b], inf = b.def.info?.[sel.f], plan = inf && PLANS[inf.plan];
+  if (!plan) return;
+  const r = plan.rooms.find(q => q.id === sel.room); if (!r) return;
+  const ps = b.def.parts, p = [Math.min(...ps.map(q=>q[0])), Math.min(...ps.map(q=>q[1])), Math.max(...ps.map(q=>q[2])), Math.max(...ps.map(q=>q[3]))];
+  const u = (r.x + r.w/2)/plan.w, v = (r.y + r.h/2)/plan.h;
+  pin.position.set(px(p[0] + u*(p[2]-p[0])), (b.def.pinGround ? .3 : sel.f*b.fh + .25), pz(p[1] + v*(p[3]-p[1])));
+  pin.visible = true;
+}
+
+// กล้อง
+const HOME = {t:new THREE.Vector3(0,0,22), r:250, phi:.92, th:-.42};
+let anim = null;
+function flyTo(target, r, phi, th){
+  const fromT = controls.target.clone(), fromP = camera.position.clone();
+  const cur = new THREE.Spherical().setFromVector3(fromP.clone().sub(fromT));
+  let t2 = th ?? cur.theta;
+  while (t2 - cur.theta > Math.PI) t2 -= Math.PI*2;
+  while (cur.theta - t2 > Math.PI) t2 += Math.PI*2;
+  anim = {t0:performance.now(), dur:1000, fromT, toT:target.clone(), s0:cur, s1:new THREE.Spherical(r, phi ?? cur.phi, t2)};
+}
+const aspectK = () => Math.max(1, 1.35 / camera.aspect);
+function flyHome(){ flyTo(HOME.t, HOME.r*aspectK(), HOME.phi, HOME.th); }
+function flyToBuilding(id, f){
+  const b = B[id], ps = b.def.parts;
+  let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;
+  ps.forEach(r => { x0=Math.min(x0,px(r[0])); x1=Math.max(x1,px(r[2])); z0=Math.min(z0,pz(r[1])); z1=Math.max(z1,pz(r[3])); });
+  const size = Math.max(x1-x0, z1-z0, 30);
+  const y = f ? (f-.5)*b.fh : b.top/2;
+  flyTo(new THREE.Vector3((x0+x1)/2, y, (z0+z1)/2), (size*2.5 + 45)*(b.def.zoom||1)*aspectK(), f ? .8 : .9, b.def.th);
+}
+function select(id, f=null, room=null, fly=true){
+  sel = {b:id, f, room};
+  applyState(); updatePin(); renderPanel();
+  if (fly){ id ? flyToBuilding(id, f) : flyHome(); }
+  stopSpin();
+}
+
+// คลิก / โฮเวอร์
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+function pick(e){
+  const rc = renderer.domElement.getBoundingClientRect();
+  ndc.set(((e.clientX-rc.left)/rc.width)*2-1, -((e.clientY-rc.top)/rc.height)*2+1);
+  ray.setFromCamera(ndc, camera);
+  const hit = ray.intersectObjects(PICK, false).find(h => h.object.visible && h.object.material.opacity > .15);
+  return hit ? hit.object.userData : null;
+}
+let down = null;
+renderer.domElement.addEventListener('pointerdown', e => { down = {x:e.clientX, y:e.clientY}; hideHint(); });
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!down) return;
+  if (Math.hypot(e.clientX-down.x, e.clientY-down.y) < 6){
+    const h = pick(e);
+    if (h){
+      const b = B[h.bid];
+      if (sel.b === h.bid && h.floor <= b.def.floors) select(h.bid, sel.f === h.floor ? null : h.floor);
+      else if (sel.b !== h.bid) select(h.bid);
+    }
+  }
+  down = null;
+});
+renderer.domElement.addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse' || e.buttons) return;
+  const h = pick(e), id = h ? h.bid : null;
+  if (id !== hover){ hover = id; applyState(); }
+});
+
+// ปุ่มมุมมอง
+let spinning = false;
+const spinBtn = document.getElementById('spinBtn');
+function stopSpin(){ spinning = false; controls.autoRotate = false; spinBtn.classList.remove('on'); }
+document.getElementById('tools').addEventListener('click', e => {
+  const v = e.target.closest('button')?.dataset.view; if (!v) return;
+  if (v === 'home'){ select(null); }
+  if (v === 'top'){ stopSpin(); flyTo(sel.b ? controls.target : new THREE.Vector3(0,0,30), sel.b ? 120 : 260, .02, 0); }
+  if (v === 'labels'){
+    const off = labelR.domElement.classList.toggle('nolbl');
+    const btn = document.getElementById('lblBtn');
+    btn.classList.toggle('on', off);
+    btn.querySelector('span').textContent = off ? ' แสดงป้ายตัวเลข' : ' ซ่อนป้ายตัวเลข';
+  }
+  if (v === 'roof'){
+    roofHidden = !roofHidden;
+    const btn = document.getElementById('roofBtn');
+    btn.classList.toggle('on', roofHidden);
+    btn.querySelector('span').textContent = roofHidden ? ' แสดงหลังคาโดม/โรงยิม' : ' ซ่อนหลังคาโดม/โรงยิม';
+    applyState();
+  }
+  if (v === 'spin'){ spinning = !spinning; controls.autoRotate = spinning; controls.autoRotateSpeed = 1.2; spinBtn.classList.toggle('on', spinning); }
+});
+const hint = document.getElementById('hint');
+function hideHint(){ hint.style.opacity = 0; }
+setTimeout(hideHint, 7000);
+
+/* ================= แผงข้อมูล ================= */
+const panel = document.getElementById('panel'); let lastB = null;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const numCls = d => d.kind === 'comp' ? 'comp' : d.kind === 'dome' ? 'dome' : '';
+
+function planSVG(key, active){
+  const p = PLANS[key];
+  let s = `<svg class="plan" viewBox="-6 -6 ${p.w+12} ${p.h+12}" data-plan="${key}"${p.h > p.w*1.6 ? ' style="max-width:190px;display:block;margin:0 auto"' : ''}>`;
+  s += `<rect x="0" y="0" width="${p.w}" height="${p.h}" fill="#fbfcfe" stroke="#1f2a37" stroke-width="2.5"/>`;
+  for (const r of p.rooms){
+    const cls = ['room']; if (r.ev) cls.push('ev'); if (r.ghost) cls.push('ghost'); if (r.id === active) cls.push('active');
+    const len = [...r.t.replace(/[ัิ-ฺ็-๎]/g,'')].length;
+    const along = r.rot ? r.h : r.w, across = r.rot ? r.w : r.h;
+    const fs = Math.min(p.fs, along/(len*.62+.8), across*.5);
+    const cx = r.x + r.w/2, cy = r.ty ?? (r.y + r.h/2);
+    s += `<g class="${cls.join(' ')}" data-id="${r.id}"><rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="3" fill="${r.ghost ? '#fff' : (r.fill || '#fff')}"${r.dash ? ' stroke-dasharray="7 4"' : ''}/>`;
+    if (r.t2 && !r.rot){
+      const f2 = Math.min(fs*.8, r.w/([...r.t2].length*.62+.8));
+      s += `<text x="${cx}" y="${cy - fs*.42}" font-size="${fs.toFixed(1)}">${esc(r.t)}</text><text class="t2" x="${cx}" y="${cy + fs*.62}" font-size="${f2.toFixed(1)}">${esc(r.t2)}</text></g>`;
+    } else s += `<text x="${cx}" y="${cy}" font-size="${fs.toFixed(1)}"${r.rot ? ` transform="rotate(-90 ${cx} ${cy})"` : ''}>${esc(r.t)}</text></g>`;
+  }
+  for (const n of (p.notes || [])) s += `<text class="note" x="${n.x}" y="${n.y}" font-size="${p.fs*.8}"${n.rot ? ` transform="rotate(-90 ${n.x} ${n.y})"` : ''}>${esc(n.t)}</text>`;
+  return s + '</svg>';
+}
+
+function homeHTML(){
+  let h = `<div class="tabs"><button data-tab="ev" class="${tab==='ev'?'on':''}">รายการแข่งขัน</button><button data-tab="bd" class="${tab==='bd'?'on':''}">อาคาร</button></div>`;
+  if (tab === 'ev'){
+    h += `<p class="intro">แตะชื่อสนามหรือห้อง แผนที่จะพาไปยังอาคาร ชั้น และห้องนั้น</p>`;
+    for (const grp of EVENTS){
+      h += `<h3 class="grp">${esc(grp.g)}</h3>`;
+      for (const it of grp.items){
+        h += `<div class="evt"><i style="background:${it.c}"></i><div><b>${esc(it.n)}</b><div class="spots">`;
+        for (const [t,b,f,room] of it.s) h += `<button data-go="${b}|${f}|${room||''}">${esc(t)}</button>`;
+        h += `</div></div></div>`;
+      }
+    }
+  } else {
+    const list = [...DEFS].sort((a,b) => (b.info?1:0) - (a.info?1:0));
+    for (const d of list){
+      const acts = d.info ? Object.entries(d.info).map(([f,i]) => `ชั้น ${f}: ${i.t}`).join(' • ') : `${d.floors} ชั้น`;
+      h += `<button class="bitem" data-b="${d.id}"><span class="num ${numCls(d)}">${esc(d.label || d.id)}</span><span><b>${esc(d.name)}</b>${d.sub ? ` <span style="color:var(--muted)">(${esc(d.sub)})</span>` : ''}<small>${esc(acts)}</small></span></button>`;
+    }
+  }
+  return h;
+}
+
+function buildingHTML(){
+  const b = B[sel.b], d = b.def;
+  let h = `<button class="back">← กลับไปหน้ารายการ</button>`;
+  h += `<div class="bhead"><span class="num ${numCls(d)}">${esc(d.label || d.id)}</span><div><h2>${esc(d.name)}</h2>${d.sub ? `<small>${esc(d.sub)}</small>` : ''}</div></div>`;
+  h += `<div class="floors">`;
+  for (let f = d.floors; f >= 1; f--){
+    const inf = d.info?.[f];
+    const cls = ['floor', inf ? (inf.plain ? 'plain' : 'has') : 'none', sel.f === f ? 'on' : ''].join(' ');
+    h += `<button class="${cls}" data-f="${f}"><b>${d.floors === 1 ? 'ทั้งหลัง' : 'ชั้น ' + f}</b><span>${inf ? esc(inf.t) : '—'}</span>${inf?.plan ? '<span class="go">ผังห้อง ›</span>' : ''}</button>`;
+  }
+  h += `</div>`;
+  const inf = sel.f && d.info?.[sel.f];
+  if (inf?.plan){
+    h += `<div class="plan-wrap"><h4>ผัง${d.name} ชั้น ${sel.f}</h4>${planSVG(inf.plan, sel.room)}<p class="tip">แตะห้องที่มีสีเพื่อดูรายละเอียด</p><div class="detail" id="detail"></div></div>`;
+  } else if (!sel.f){
+    h += `<p class="tip">เลือกชั้นเพื่อไฮไลต์ในแผนที่ ${d.info ? 'ชั้นที่มีพื้นสีเขียวคือชั้นที่มีกิจกรรม' : ''}</p>`;
+  }
+  return h;
+}
+
+function showDetail(){
+  const el = document.getElementById('detail'); if (!el) return;
+  const d = B[sel.b].def, inf = d.info?.[sel.f], r = sel.room && PLANS[inf.plan].rooms.find(q => q.id === sel.room);
+  if (!r || !r.ev){ el.classList.remove('show'); return; }
+  el.innerHTML = `<b>${esc(r.ev)}</b><small>${esc(d.name)} ชั้น ${sel.f} · ${esc(r.t)}</small>`;
+  el.style.borderLeftColor = r.fill || 'var(--accent)';
+  el.classList.add('show');
+}
+
+function renderPanel(){
+  const keep = (sel.b && sel.b === lastB) ? panel.scrollTop : null; lastB = sel.b;
+  panel.innerHTML = sel.b ? buildingHTML() : homeHTML();
+  if (sel.b){
+    showDetail();
+    const plan = panel.querySelector('.plan-wrap');
+    if (plan && sel.f && panel.clientHeight < 560) plan.scrollIntoView({block:'start'}); else if (keep !== null && sel.f) panel.scrollTop = keep; else panel.scrollTop = 0;
+  } else panel.scrollTop = 0;
+}
+
+panel.addEventListener('click', e => {
+  const t = e.target.closest('button, g.room');
+  if (!t) return;
+  if (t.dataset.tab){ tab = t.dataset.tab; renderPanel(); return; }
+  if (t.classList.contains('back')){ select(null); return; }
+  if (t.dataset.go){ const [b,f,room] = t.dataset.go.split('|'); select(b, +f, room || null); return; }
+  if (t.dataset.b){ select(t.dataset.b); return; }
+  if (t.dataset.f){ const f = +t.dataset.f; select(sel.b, sel.f === f ? null : f, null); return; }
+  if (t.matches('g.room.ev')){
+    sel.room = t.dataset.id;
+    panel.querySelectorAll('g.room').forEach(g => g.classList.toggle('active', g.dataset.id === sel.room));
+    updatePin(); showDetail();
+  }
+});
+
+/* ================= เริ่มทำงาน ================= */
+function resize(){
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  renderer.setSize(w, h); labelR.setSize(w, h);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(wrap);
+resize();
+controls.target.copy(HOME.t);
+camera.position.copy(HOME.t).add(new THREE.Vector3().setFromSpherical(new THREE.Spherical(HOME.r*1.5, .55, HOME.th - .8)));
+flyHome();
+applyState(); renderPanel();
+document.fonts?.ready.then(() => { TEXT_PLANES.forEach(m => m.userData.redraw()); SCREEN_MATS.forEach(m => m.userData.redraw()); LATE_TEX.forEach(t => t.userData.draw()); });
+
+window.__map = {camera, controls, THREE};
+const ease = k => k < .5 ? 4*k*k*k : 1 - Math.pow(-2*k+2, 3)/2;
+renderer.setAnimationLoop(now => {
+  if (anim){
+    const k = Math.min(1, (now - anim.t0)/anim.dur), e = ease(k);
+    controls.target.lerpVectors(anim.fromT, anim.toT, e);
+    const s = new THREE.Spherical(
+      anim.s0.radius + (anim.s1.radius - anim.s0.radius)*e,
+      anim.s0.phi + (anim.s1.phi - anim.s0.phi)*e,
+      anim.s0.theta + (anim.s1.theta - anim.s0.theta)*e);
+    camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(s));
+    if (k >= 1) anim = null;
+  }
+  const t = now/1000;
+  if (pin.visible){ pin.children[0].position.y = 1.3 + Math.sin(t*4)*.4; pin.children[1].position.y = 3.2 + Math.sin(t*4)*.4; const sc = 1 + (t*1.5 % 1)*1.2; pin.userData.ring.scale.set(sc,sc,sc); pin.userData.ring.material.opacity = .7*(1-(t*1.5%1)); }
+  if (regPin) regPin.position.y = regPos.y + Math.sin(t*3)*.5;
+  controls.update();
+  renderer.render(scene, camera); labelR.render(scene, camera);
+});
+</script>
+</body>
+</html>
