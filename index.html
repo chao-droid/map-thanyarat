@@ -1032,9 +1032,9 @@ function buildB5(def, all){
     }
     // ชั้น 4–9 : ผอมลงครึ่งหนึ่ง ชิดตะวันตก ผนังห้องสีครีม + ระเบียงทางเดินขอบหนาสีเขียวมิ้นต์ (ทิศตะวันออก)
     const Dt = Dp/2, z0 = -Dp/2, COR = 2.2, rd = Dt - COR, eF = 0;
-    add(floorBox(L-7, fh-.06, rd), '#eef0c4', -.5+3.5-3, y+(fh-.06)/2, z0+rd/2, f, {map:TEX6v});
-    add(box(L-7, .35, Dt), MINT5, 3.5-3.5, y+.17, z0+Dt/2, f);
-    add(box(L-6.6, 1.15, .45), MINT5, 0, y+.85, eF-.22, f);
+    add(floorBox(L-6.4, fh-.06, rd), '#eef0c4', 3.2, y+(fh-.06)/2, z0+rd/2, f, {map:TEX6v});
+    add(box(L-6.4, .35, Dt), MINT5, 3.2, y+.17, z0+Dt/2, f);
+    add(box(L-6.2, 1.15, .45), MINT5, 3.3, y+.85, eF-.22, f);
     for (let i = 0; i <= 9; i++) add(box(.5, .35, .9), MINT5, -L/2+4+i*(L-8)/9, y+.05, eF-.1, f);
     if (f === 4) add(box(L+.6, .5, Dp/2+.6), '#d9d6cc', 0, y+.25, Dp/4, f);   // ดาดฟ้าชั้น 3 ส่วนหน้า
   }
@@ -1054,7 +1054,7 @@ function buildB5(def, all){
   // หลังคาแบน + โครงคานด้านบน
   const top = Y0 + n*fh, Dt = Dp/2, zt = -Dp/4, y4 = Y0 + 3*fh;
   // หลังคาแผ่นหนาสีเขียวมิ้นต์
-  add(box(L-6.6, 1.3, Dt+.6), MINT5, 0, top+.55, zt+.1, n+1);
+  add(box(L-6.0, 1.3, Dt+.6), MINT5, 3.2, top+.55, zt+.1, n+1);
   // โถงบันไดทึบเต็มความสูง ปลายทิศใต้ (มีครีบแนวตั้ง) + ธงบนยอด
   const sx = -L/2 + 3.2, sh = top + 3.2 - y4;
   add(box(6.4, sh, Dt+.4), MINT5, sx, y4 + sh/2, zt+.2, 4);
