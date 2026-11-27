@@ -1201,18 +1201,24 @@ TOILETS.forEach(r => {
   label('สระน้ำ', 'flag', new THREE.Vector3(cx + 2, 4.5, cz + 4));
 })();
 
-// คลินิก Thanyarat + ศาลาหลังคาเขียว (ระหว่างอาคาร 7 กับ 8)
+// ห้องพยาบาล + ศาลาหลังคาเขียว (ระหว่างอาคาร 7 กับ 8)
 (function(){
   const sm = (c, o={}) => new THREE.MeshStandardMaterial({color:c, roughness:.8, ...o});
   const put = (geo, material, x, y, z) => { const m = new THREE.Mesh(geo, material); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; scene.add(m); return m; };
-  // คลินิก : ห้องกระจกสีขาว หลังคาเพิงแบน
+  // ห้องพยาบาล : ห้องกระจกสีขาว หลังคาเพิงแบน
   const cx = px(1018), cz = pz(236), cw = 9, cd = 4;
   put(new THREE.BoxGeometry(cw, .7, cd), sm('#e9ecea'), cx, .45, cz);
   put(new THREE.BoxGeometry(cw-.3, 2.3, cd-.3), sm('#9cc3d6', {roughness:.15, metalness:.3, transparent:true, opacity:.75}), cx, 1.95, cz);
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) put(new THREE.BoxGeometry(.25, 2.4, .25), sm('#f4f6f5'), cx+sx*(cw/2-.15), 2, cz+sz*(cd/2-.15));
   put(new THREE.BoxGeometry(cw+1.2, .25, cd+1.4), sm('#f4f6f5'), cx, 3.3, cz+.3);
-  const sign = textPlane('Clinic Thanyarat', 3.4, .7, '#ffffff', '#1f9a48'); sign.position.set(cx+cw/2-2.3, 2.6, cz+cd/2+.02); scene.add(sign);
-  label('คลินิก', 'flag', new THREE.Vector3(cx, 5.5, cz));
+  const sign = textPlane('ห้องพยาบาล', 3.4, .7, '#ffffff', '#c62828'); sign.position.set(cx+cw/2-2.3, 2.6, cz+cd/2+.02); scene.add(sign);
+  // กากบาทแดง สัญลักษณ์ห้องพยาบาล (บนป้ายหน้า และบนหลังคา)
+  const crossM = new THREE.MeshBasicMaterial({color:'#e11d1d'});
+  for (const [w, h] of [[.9, .28], [.28, .9]]){
+    const c1 = new THREE.Mesh(new THREE.PlaneGeometry(w, h), crossM); c1.position.set(cx-cw/2+1.2, 2.6, cz+cd/2+.03); scene.add(c1);
+    const c2 = new THREE.Mesh(new THREE.BoxGeometry(w*2.4, .05, h*2.4), crossM); c2.position.set(cx, 3.48, cz+.3); scene.add(c2);
+  }
+  label('ห้องพยาบาล', 'flag', new THREE.Vector3(cx, 5.5, cz));
   // ศาลาหลังคากระเบื้องเขียว
   for (const x of [px(1040), px(1062), px(1084)]){
     const z = pz(237.5), w = 6, d = 3.6;
