@@ -144,7 +144,7 @@ const DEFS = [
     info:{1:{t:'ธนาคาร · บริหารทั่วไป · ใต้ถุนโล่ง', plan:'b1f1', plain:1}, 2:{t:'การเงิน · ผอ. · วิชาการ · วัดผล · บุคคล · พัสดุ', plan:'b1f2', plain:1}, 3:{t:'ห้องเรียน 131–135 · ห้องพักครูไทย', plan:'b1f3', plain:1}, 4:{t:'ห้องเรียน 141–145 · ห้องพักครู Gifted', plan:'b1f4', plain:1}}},
   {id:'2', name:'อาคาร 2', sub:'อาคารเรียนแบบพิเศษ 4 ชั้น · ห้องเรียนจริง 14 ห้อง', parts:[[868,130,1035,160],[1002,160,1035,228]], floors:4, kind:'class', custom:'corr', fronts:['s','w'], style:'b2', th:-.2, zoom:.85, labelAt:[990,130,1035,160],
     info:{1:{t:'ห้องราชพฤกษ์ · ศูนย์เทคโนโลยี · ห้องพักครูพละ', plan:'b2f1', plain:1}, 2:{t:'ห้อง 221–226 · พักครูต่างประเทศ · พักครูแนะแนว', plan:'b2f2', plain:1}, 3:{t:'ห้อง 231–236', plan:'b2f3', plain:1}, 4:{t:'ห้อง 241–246', plan:'b2f4', plain:1}}},
-  {id:'3', name:'อาคาร 3', sub:'อาคารเรียน 3 ชั้น · โถงบันได 2 จุด · ปลายตะวันตกหักเป็นตัว L เชื่อมอาคาร 5', parts:[[722,130,868,160],[693,130,722,168]], floors:3, kind:'comp', custom:'corr', fronts:['s','e'], style:'b3', labelAt:[722,130,868,160], th:.25,
+  {id:'3', name:'อาคาร 3', sub:'อาคารเรียน 3 ชั้น · โถงบันได 2 จุด · ปลายตะวันตกหักเป็นตัว L เชื่อมอาคาร 5', parts:[[722,130,868,160],[693,130,722,168]], floors:3, kind:'comp', custom:'corr', fronts:['s','e'], style:'b3', labelAt:[722,130,868,160], solidPart:1, stairsAt:[767,841], th:.25,
     info:{1:{t:'Campus · ห้อง 311–313 · พักครูวิทยาศาสตร์', plan:'b3f1', plain:1}, 2:{t:'ห้องล้างจานโรงอาหาร · ห้อง 321–324', plan:'b3f2', plain:1}, 3:{t:'ห้องพักผู้แข่งขันหุ่นยนต์ (331–335) · ห้อง 337', plan:'b3f3'}}},
   {id:'4', name:'อาคาร 4', sub:'อาคารเรียนแบบ 418 ค · 18 ห้องเรียน', parts:[[693,310,862,353]], floors:4, kind:'class', custom:'corr', fronts:['n'], style:'b4', th:3.0,
     info:{1:{t:'ดนตรีสากล · สหกรณ์ · ใต้ถุนโล่ง', plan:'b4f1', plain:1}, 2:{t:'ห้องเรียน 421–425 · พักครูสังคม', plan:'b4f2', plain:1}, 3:{t:'ห้องเรียน 431–435 · พักครูสังคม', plan:'b4f3', plain:1}, 4:{t:'ห้องเรียน 441–445 · จริยธรรม', plan:'b4f4', plain:1}}},
@@ -956,6 +956,15 @@ function buildCorridor(def, all){
     const COR = 3, zF = Dp/2, rd = Dp - COR, zR = -Dp/2 + rd/2;
     const bays = Math.max(4, Math.round(L/4.2)), bay = L/bays;
     add(box(L, .2, Dp), '#d6d9d2', 0, Y0+.1, 0, 1);
+    if (def.solidPart === pi){        // ส่วนต่อเติม : ชั้น 1 โล่ง ชั้น 2–3 ทึบเชื่อมกัน
+      const nb = Math.max(2, Math.round(L/4.5));
+      for (let i = 0; i <= nb; i++) for (const z of [-Dp/2+.4, 0, Dp/2-.4]) add(box(.6, fh, .6), o.col, -L/2+.3+i*(L-.6)/nb, Y0+fh/2, z, 1);
+      for (let f = 2; f <= n; f++){ const y = Y0 + (f-1)*fh;
+        add(floorBox(L, fh-.06, Dp), o.wall, 0, y+(fh-.06)/2, 0, f, {map:TEX});
+        add(box(L+.5, .3, Dp+.5), o.slab, 0, y+.15, 0, f); }
+      const top = Y0 + n*fh; add(box(L+.8, .9, Dp+.8), o.fascia, 0, top+.45, 0, n+1);
+      topMax = Math.max(topMax, top + 1); return;
+    }
     if (o.allOpen){
       for (let i = 0; i <= bays; i++) for (const z of [zF-.35, zF-COR, -Dp/2+.4]) add(box(.6, fh, .6), o.col, -L/2+i*bay, Y0+fh/2, z, 1);
     } else if (o.groundOpen){
@@ -980,7 +989,16 @@ function buildCorridor(def, all){
       rf.userData = {bid:def.id, floor:n+1}; addObj(rf); top2 = top + .9 + Dp*.16;
     } else add(box(L+.4, .15, Dp+.4), '#d9dcdf', 0, top+.95, 0, n+1);
     if (o.vent) for (const sx of [-1, 1]) plane(new THREE.PlaneGeometry(4.5, (n-1)*fh), ventMat('#eef6f1', '#b9d3c4', [4, 14]), sx*(L/2-2.6), Y0+fh+(n-1)*fh/2, zF+.05, 2);
-    if (o.tower && pi === 0){
+    if (def.stairsAt && pi === 0){    // โถงบันไดสีขาว 2 จุด ยื่นด้านหน้า
+      const gx = (r[0]+r[2])/2;
+      for (const sx of def.stairsAt){
+        const lx = (sx - gx)*S, tw = 5, td = 3.6, th = n*fh + 1.4;
+        add(box(tw, th, td), o.wall, lx, Y0+th/2, zF+td/2-.2, 1);
+        plane(new THREE.PlaneGeometry(tw*.6, th*.8), ventMat(o.wall, '#e9fffa', [3, 10]), lx, Y0+th*.5, zF+td-.18, 1);
+        add(box(tw+.5, .4, td+.5), '#f6f7f5', lx, Y0+th+.2, zF+td/2-.2, n+1);
+      }
+    }
+    if (o.tower && pi === 0 && !def.stairsAt){
       const tw = 6.5, tx = L/2 - tw/2 - .5, th = n*fh + 1.6;
       for (let f = 1; f <= n; f++) add(box(tw, fh, 4.2), o.wall, tx, Y0+(f-1)*fh+fh/2, zF-.9, f);
       add(box(tw, 1.6, 4.2), o.wall, tx, top+.8, zF-.9, n+1);
