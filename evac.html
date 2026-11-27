@@ -1063,8 +1063,11 @@ function buildB5(def, all){
   for (let i = 0; i <= bays; i++) for (const z of [zF-.4, 0]) add(box(.7, fh, .7), LIME2, -L/2+i*bay, Y0+fh/2, z, 1);
   for (let f = 2; f <= n; f++){
     const y = Y0 + (f-1)*fh;
-    add(floorBox(L, fh-.06, Dp), LIME, 0, y+(fh-.06)/2, 0, f, {map:TEX});
-    add(box(L+.5, .32, Dp+.5), LIME2, 0, y+.16, 0, f);
+    const dd = f >= 4 ? Dp/2 : Dp, dz = f >= 4 ? -Dp/4 : 0;   // ชั้น 4–9 ผอมลงครึ่งหนึ่ง (ชิดฝั่งตะวันตก ระเบียงหันตะวันออก)
+    add(floorBox(L, fh-.06, dd), LIME, 0, y+(fh-.06)/2, dz, f, {map:TEX});
+    add(box(L+.5, .32, dd+.5), LIME2, 0, y+.16, dz, f);
+    if (f === 4) add(box(L+.6, .5, Dp/2+.6), '#d9d6cc', 0, y+.25, Dp/4, f);
+    if (f >= 4) for (let i = 0; i <= 8; i++) add(box(.25, fh-.2, 1.2), '#8fd3a8', -L/2+.5+i*(L-1)/8, y+fh/2, .6, f);   // ครีบระเบียงสีเขียวด้านตะวันออก   // หลังคาชั้น 3 ส่วนที่เหลือ
   }
   // ห้องประชุมชั้น 3 : แผงครีบระแนงขาว + ป้ายชื่อ
   const hW = L*.58, hY = Y0 + 2*fh, hH = fh*1.35;
@@ -1081,10 +1084,11 @@ function buildB5(def, all){
   }
   // หลังคาแบน + โครงคานด้านบน
   const top = Y0 + n*fh;
-  add(box(L+.8, .7, Dp+.8), LIME2, 0, top+.35, 0, n+1);
-  for (const sx of [-1, 1]) for (const k of [-.35, 0, .35]) add(box(.5, 2.6, .5), LIME, k*L, top+2, sx*(Dp/2-1.5), n+1);
-  for (const k of [-.35, 0, .35]) add(box(.45, .45, Dp-2), LIME, k*L, top+3.3, 0, n+1);
-  for (const sx of [-1, 1]) add(box(L*.75, .45, .45), LIME, 0, top+3.3, sx*(Dp/2-1.5), n+1);
+  const Dt = Dp/2, zt = -Dp/4;
+  add(box(L+.8, .7, Dt+.8), LIME2, 0, top+.35, zt, n+1);
+  for (const sx of [-1, 1]) for (const k of [-.35, 0, .35]) add(box(.5, 2.6, .5), LIME, k*L, top+2, zt + sx*(Dt/2-1), n+1);
+  for (const k of [-.35, 0, .35]) add(box(.45, .45, Dt-1), LIME, k*L, top+3.3, zt, n+1);
+  for (const sx of [-1, 1]) add(box(L*.75, .45, .45), LIME, 0, top+3.3, zt + sx*(Dt/2-1), n+1);
   return top + 3.6;
 }
 
