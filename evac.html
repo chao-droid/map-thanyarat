@@ -37,6 +37,20 @@ html,body{margin:0;height:100%;font-family:'Sarabun',system-ui,sans-serif;color:
 #alarm big{display:block;font-size:20px;font-weight:800}
 #alarm.done{background:#15803d}
 #flash{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 50px 0 rgba(239,68,68,.6);opacity:0;z-index:4}
+.rsearch{margin-bottom:10px}.rsearch input{width:100%;font:inherit;font-size:15px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.rsearch input:focus{outline:2px solid #facc15;border-color:#eab308}
+#rres{display:flex;flex-direction:column;gap:4px;margin-top:6px}#rres button{font:inherit;text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer}
+#rres button em{font-style:normal;color:var(--muted);font-size:13px;float:right}#rres button:hover{border-color:#eab308;background:#fefce8}
+.rcard{background:#fefce8;border:1px solid #fde047;border-left:6px solid #eab308;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:15px}
+.rcard>small{color:var(--muted)}.rcard>b{display:block;font-size:20px}.rcard .go1{margin-top:3px}
+.rtab{border:1px solid #fecaca;border-radius:12px;padding:10px;margin:-2px 0 10px;background:#fff}
+.rtab>b{color:#b91c1c}.rtab>small{display:block;color:var(--muted);margin-bottom:6px}
+.rhead{display:grid;grid-template-columns:52px 1fr 1fr;gap:6px;font-size:12.5px;font-weight:700;color:#b91c1c}.rhead span:first-child{grid-column:2}
+.rrow{display:grid;grid-template-columns:52px 1fr 1fr;gap:6px;padding:6px 0;border-top:1px dashed var(--line);align-items:start}
+.rf{font-weight:800;font-size:13px;padding-top:4px}
+.rcol{display:flex;flex-wrap:wrap;gap:4px}.rcol button{font:inherit;font-size:12.5px;line-height:1.25;border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:3px 7px;cursor:pointer;text-align:left}
+.rcol button i{display:block;font-style:normal;font-size:11px;color:var(--muted)}.rcol button.on{background:#facc15;border-color:#eab308}.rcol button:hover{border-color:#eab308}
+.evl{margin-top:6px;font-weight:700;color:#92400e;background:#fef3c7;border-radius:8px;padding:4px 8px}
 .rule{background:#fff1f1;border:1px solid #fecaca;border-left:6px solid #e11d1d;border-radius:12px;padding:10px 12px;margin:0 0 12px;font-size:15px}
 .rule b{color:#b91c1c;font-size:16.5px;display:block}
 .evb{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;font:inherit;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
@@ -163,17 +177,17 @@ const KIND = {comp:'#c8f56e', class:'#a8e4b4', dome:'#fff08a', wc:'#6fe0e6'};
 // floors = จำนวนชั้น (ประมาณการ แก้ได้), info = กิจกรรมแต่ละชั้น, plan = ผังห้อง
 const DEFS = [
   {id:'1', name:'อาคาร 1', sub:'อาคารเรียนแบบ 318 ล./30 · 18 ห้องเรียน', parts:[[905,320,1100,363]], floors:4, kind:'class', custom:'b1', th:.35, zoom:.62,
-    info:{1:{t:'ธนาคาร · บริหารทั่วไป · ใต้ถุนโล่ง', plan:'b1f1', plain:1}, 2:{t:'สำนักงาน ผอ. การเงิน วิชาการ ทะเบียน สารบรรณ พัสดุ', plan:'b1f2', plain:1}, 3:{t:'ห้องเรียน 131–135 · ภาษาไทย', plan:'b1f3', plain:1}, 4:{t:'ห้องเรียน 141–146', plan:'b1f4', plain:1}}},
+    info:{1:{t:'ธนาคาร · บริหารทั่วไป · ใต้ถุนโล่ง', plan:'b1f1', plain:1}, 2:{t:'การเงิน · ผอ. · วิชาการ · วัดผล · บุคคล · พัสดุ', plan:'b1f2', plain:1}, 3:{t:'ห้องเรียน 131–135 · ห้องพักครูไทย', plan:'b1f3', plain:1}, 4:{t:'ห้องเรียน 141–145 · ห้องพักครู Gifted', plan:'b1f4', plain:1}}},
   {id:'2', name:'อาคาร 2', sub:'อาคารเรียนแบบพิเศษ 4 ชั้น · ห้องเรียนจริง 14 ห้อง', parts:[[868,130,1035,160],[1002,160,1035,228]], floors:4, kind:'class', custom:'corr', fronts:['s','w'], style:'b2', th:-.2, zoom:.85, labelAt:[990,130,1035,160],
-    info:{1:{t:'ห้องราชพฤกษ์ · ศูนย์โสตฯ · ห้องพยาบาล', plan:'b2f1', plain:1}, 2:{t:'ห้อง 222–225 · ญี่ปุ่น · แนะแนว', plan:'b2f2', plain:1}, 3:{t:'ห้อง 231–236', plan:'b2f3', plain:1}, 4:{t:'ห้อง 241–246', plan:'b2f4', plain:1}}},
-  {id:'3', name:'อาคาร 3', sub:'อาคารเรียนแบบ 318 ล./30 · 18 ห้องเรียน', parts:[[708,130,868,160]], floors:4, kind:'comp', custom:'corr', fronts:['s'], style:'b3', th:.25,
-    info:{1:{t:'ห้องวิทย์ 311–313 · พักครูวิทยาศาสตร์', plan:'b3f1', plain:1}, 2:{t:'ห้องวิทย์ 321–324', plan:'b3f2', plain:1}, 3:{t:'ห้องพักผู้แข่งขันหุ่นยนต์ (331–335)', plan:'b3f3'}}},
+    info:{1:{t:'ห้องราชพฤกษ์ · ศูนย์เทคโนโลยี · ห้องพักครูพละ', plan:'b2f1', plain:1}, 2:{t:'ห้อง 221–226 · พักครูต่างประเทศ · พักครูแนะแนว', plan:'b2f2', plain:1}, 3:{t:'ห้อง 231–236', plan:'b2f3', plain:1}, 4:{t:'ห้อง 241–246', plan:'b2f4', plain:1}}},
+  {id:'3', name:'อาคาร 3', sub:'อาคารเรียน 3 ชั้น · ชั้นละ 6 ห้อง', parts:[[708,130,868,160]], floors:3, kind:'comp', custom:'corr', fronts:['s'], style:'b3', th:.25,
+    info:{1:{t:'ห้อง 311–313 · พักครูวิทยาศาสตร์', plan:'b3f1', plain:1}, 2:{t:'ห้อง 321–324 · อุปกรณ์วิทยาศาสตร์', plan:'b3f2', plain:1}, 3:{t:'ห้องพักผู้แข่งขันหุ่นยนต์ (331–335)', plan:'b3f3'}}},
   {id:'4', name:'อาคาร 4', sub:'อาคารเรียนแบบ 418 ค · 18 ห้องเรียน', parts:[[693,310,862,335]], floors:4, kind:'class', custom:'corr', fronts:['n'], style:'b4', th:3.0,
     info:{1:{t:'ดนตรีสากล · สหกรณ์ · ใต้ถุนโล่ง', plan:'b4f1', plain:1}, 2:{t:'ห้องเรียน 421–425 · พักครูสังคม', plan:'b4f2', plain:1}, 3:{t:'ห้องเรียน 431–435 · พักครูสังคม', plan:'b4f3', plain:1}, 4:{t:'ห้องเรียน 441–445 · จริยธรรม', plan:'b4f4', plain:1}}},
   {id:'5', name:'อาคาร 5', sub:'อาคารกาญจนาภิเษก · ห้องประชุมกาญจนาภิเษก ชั้น 3', parts:[[693,168,747,300]], floors:9, kind:'comp', custom:'b5', th:1.35, zoom:1.1,
     info:{3:{t:'แข่งขันหุ่นยนต์ (ห้องประชุมกาญจนาภิเษก)', plan:'b5f3'}, 4:{t:'ห้อง 541–544', plan:'b5f4', plain:1}, 5:{t:'ห้อง 551–554', plan:'b5f5', plain:1}, 6:{t:'ห้อง 561–564', plan:'b5f6', plain:1}, 7:{t:'ห้อง 571–574', plan:'b5f7', plain:1}, 8:{t:'ห้อง 581–584', plan:'b5f8', plain:1}, 9:{t:'ห้อง 591–594', plan:'b5f9', plain:1}}},
   {id:'6', name:'อาคาร 6', parts:[[908,400,949,515]], floors:5, kind:'comp', custom:'b6', front:'east', th:1.2,
-    info:{1:{t:'จุดรับลงทะเบียน (โถงใต้อาคาร)', plan:'b6f1'}, 2:{t:'แข่งขันโครงงาน', plan:'b6f2'}, 3:{t:'ห้องเรียน 631–6310', plan:'b6f3', plain:1}, 4:{t:'ห้องเรียน 641–6410', plan:'b6f4', plain:1}, 5:{t:'แข่งขันทักษะวิชาการคอมพิวเตอร์', plan:'b6f5'}}},
+    info:{1:{t:'จุดรับลงทะเบียน (โถงใต้อาคาร)', plan:'b6f1'}, 2:{t:'แข่งขันโครงงาน', plan:'b6f2'}, 3:{t:'ห้องเรียน 630–639 (ม.5/6–5/14, 6/2)', plan:'b6f3', plain:1}, 4:{t:'ห้องเรียน 641–649 (ม.6/3–6/11) · ห้อง ICT 640', plan:'b6f4', plain:1}, 5:{t:'แข่งขันทักษะวิชาการคอมพิวเตอร์', plan:'b6f5'}}},
   {id:'7', name:'อาคาร 7', sub:'อาคารเรียนแบบ สปช. 2/28 · 4 ชั้น 12 ห้องเรียน', parts:[[1008,252,1100,295]], floors:4, kind:'class', custom:'corr', fronts:['n'], style:'b7', th:2.7,
     info:{1:{t:'ห้องพักครู · ใต้ถุนโล่ง', plan:'b7f1', plain:1}, 2:{t:'ห้องเรียน 721–724', plan:'b7f2', plain:1}, 3:{t:'ห้องเรียน 731–734', plan:'b7f3', plain:1}, 4:{t:'ห้องเรียน 741–744', plan:'b7f4', plain:1}}},
   {id:'8', sub:'อาคารโรงฝึกงานแบบ 102/27', name:'อาคาร 8-1', label:'8-1', parts:[[1048,194,1105,220]], floors:1, fh:5, kind:'class', custom:'hall', th:.4},
@@ -286,7 +300,7 @@ const CLS_FILL = '#eaf7ee', OTH_FILL = '#f6f1e4';
 function evText(t, t2){ return /^\d+\/\d+$/.test(t2||'') ? `ห้อง ${t} · ห้องเรียน ม.${t2}` : (t2 ? `${t} · ${t2}` : t); }
 function cellRoom(c, x, y, w, h, key){
   const [t, t2, , k] = c;
-  if (k === 's') return {id:key, t:'บันได', x, y, w, h, ghost:1};
+  if (k === 's') return {id:key, t:t || 'บันได', x, y, w, h, ghost:1};
   if (k === 'w') return {id:key, t:t || 'ห้องน้ำ', x, y, w, h, fill:'#dff6f7'};
   return {id:t, t, t2, x, y, w, h, fill: k === 'o' ? OTH_FILL : CLS_FILL, ev: evText(t, t2)};
 }
@@ -309,12 +323,12 @@ function vplan1(cells, W=216, H=528){        // แถวเดียว ห้�
   cells.forEach((c, i) => { const h = (c[2] || 1)*unit; rooms.push(cellRoom(c, 30, y+1, W-36, h-2, 'c'+i)); y += h; });
   return {w:W, h:H, fs:22, rooms, notes:[{t:'ระเบียง', x:15, y:H/2, rot:1}]};
 }
-const S_ = ['','',.6,'s'], WC = ['ห้องน้ำ','',.6,'w'];
+const SA = ['บันได A','',.55,'s'], SB = ['บันได B','',.55,'s'], S_ = ['','',.6,'s'], WC = ['ห้องน้ำ','',.6,'w'];
 // อาคาร 1 (ระเบียงทิศใต้)
 PLANS.b1f1 = hplan([S_, ['ธนาคาร','',1,'o'], ['ใต้ถุนโล่ง','',4,'o'], S_, ['บริหารทั่วไป','',1,'o']], 0);
-PLANS.b1f2 = hplan([S_, ['การเงิน','',1,'o'], ['ผอ.','',1,'o'], ['วิชาการ','',1,'o'], ['ทะเบียน','',1,'o'], ['สารบรรณ','',1,'o'], S_, ['พัสดุ','',1,'o']], 0);
-PLANS.b1f3 = hplan([S_, ['131','6/5'], ['132','6/6'], ['133','6/7'], ['134','6/8'], ['135',''], S_, ['ภาษาไทย','',1,'o']], 0);
-PLANS.b1f4 = hplan([S_, ['141','6/9'], ['142','6/10'], ['143','6/11'], ['144','6/12'], ['145','6/13'], S_, ['146','6/14']], 0);
+PLANS.b1f2 = hplan([S_, ['การเงิน','',1,'o'], ['ผอ.','',1,'o'], ['วิชาการ','',1,'o'], ['วัดผล','',1,'o'], ['บุคคล','',1,'o'], ['พัสดุ','',1,'o'], S_], 0);
+PLANS.b1f3 = hplan([S_, ['131','3/1'], ['132','6/1'], ['133','1/1'], ['134','2/1'], ['135','โสตฯ ไทย'], ['136','ห้องพักครูไทย',1,'o'], S_], 0);
+PLANS.b1f4 = hplan([S_, ['141','4/1'], ['142','5/1'], ['143','5/3'], ['144','3/13'], ['145','5/4'], ['146','ห้องพักครู Gifted',1,'o'], S_], 0);
 // อาคาร 7 (ระเบียงทิศเหนือ)
 PLANS.b7f1 = hplan([S_, ['ห้องพักครู','',.6,'o'], ['ใต้ถุนโล่ง','',4,'o'], ['ห้องพักครู','',.6,'o'], S_], 1);
 PLANS.b7f2 = hplan([S_, ['721','1/4'], ['722','1/5'], ['723','1/6'], ['724','1/7'], S_], 1);
@@ -326,13 +340,16 @@ PLANS.b4f2 = hplan([['พักครูสังคม','',1.2,'o'], S_, ['425'
 PLANS.b4f3 = hplan([['พักครูสังคม','',1.2,'o'], S_, ['435','5/3'], ['434','5/2'], ['433','4/14'], ['432','4/13'], ['431','4/12'], S_], 1);
 PLANS.b4f4 = hplan([['จริยธรรม','',1.2,'o'], S_, ['445','6/4'], ['444','6/3'], ['443','6/2'], ['442','5/5'], ['441','5/4'], S_], 1);
 // อาคาร 3 (ระเบียงทิศใต้)
-PLANS.b3f1 = hplan([['พักครูวิทยาศาสตร์','',2.2,'o'], ['313','วิทย์ 3'], ['อุปกรณ์','',.4,'o'], ['312','วิทย์ 2'], ['อุปกรณ์','',.4,'o'], ['311','วิทย์ 1']], 0);
-PLANS.b3f2 = hplan([['พักครู','',.4,'o'], ['324','วิทย์ 7',1.4], ['อุปกรณ์','',.4,'o'], ['323','วิทย์ 6'], ['322','วิทย์ 5'], ['321','วิทย์ 4',1.4], ['อุปกรณ์','',.4,'o']], 0);
+PLANS.b3f1 = hplan([['พักครูวิทยาศาสตร์','',1.6,'o'], SA, ['313',''], ['312',''], ['โถง','',1,'o'], SB, ['311','']], 0);
+PLANS.b3f2 = hplan([['อุปกรณ์วิทยาศาสตร์','',1,'o'], ['324',''], SA, ['323',''], ['322',''], ['โถง','',1,'o'], SB, ['321','']], 0);
+PLANS.b3f3 = hplan([['335','พัก Sumo RC'], ['334','พัก ล้อมีสาย'], SA, ['333','พัก เตะจุดโทษ'], ['332','พัก Robot Athletics'], ['ห้องโครงงาน','',1,'o'], SB, ['331','พัก Drone']], 0);
+{ const C3 = {'335':['#ff8e8e','หุ่นยนต์ Sumo 1000 RC'], '334':['#e2aaf0','หุ่นยนต์บังคับมือแบบล้อ รีโมทมีสาย'], '333':['#5fe0e6','หุ่นยนต์บังคับมือ ซ้อมเตะจุดโทษ'], '332':['#c8f56e','หุ่นยนต์อัตโนมัติขนส่งสินค้า (Robot Athletics)'], '331':['#fff38a','อากาศยานไร้คนขับทำภารกิจ (Drone Mission)']};
+  for (const r of PLANS.b3f3.rooms) if (C3[r.id]){ r.fill = C3[r.id][0]; r.ev = 'ห้อง ' + r.id + ' · ห้องพักผู้แข่งขัน: ' + C3[r.id][1]; } }
 // อาคาร 6 ชั้น 3–4 (ฝั่งตะวันตก | ฝั่งตะวันออก)
-PLANS.b6f3 = vplan2([['ห้องน้ำชาย','',.6,'w'], ['632','1/2'], ['634','5/1'], ['636','1/1'], ['638','3/1'], ['6310','2/1'], ['ห้องน้ำหญิง','',.6,'w']],
-                    [S_, ['631','3/2'], ['633','2/2'], ['635','4/1'], ['637','6/1'], ['639','ห้องพักครู',1,'o'], S_]);
-PLANS.b6f4 = vplan2([['ห้องน้ำชาย','',.6,'w'], ['642','5/7'], ['644','5/9'], ['646','5/11'], ['648','5/13'], ['6410','หุ่นยนต์',1,'o'], ['ห้องน้ำหญิง','',.6,'w']],
-                    [S_, ['641','5/6'], ['643','5/8'], ['645','5/10'], ['647','5/12'], ['649','5/14'], S_]);
+PLANS.b6f3 = vplan2([['ห้องน้ำชาย','',.6,'w'], ['632','5/7'], ['634','5/9'], ['636','5/11'], ['638','5/13'], ['630','6/2'], ['ห้องน้ำหญิง','',.6,'w']],
+                    [S_, ['631','5/6'], ['633','5/8'], ['635','5/10'], ['637','5/12'], ['639','5/14'], S_]);
+PLANS.b6f4 = vplan2([['ห้องน้ำชาย','',.6,'w'], ['642','6/4'], ['644','6/6'], ['646','6/8'], ['648','6/10'], ['640','ห้อง ICT',1,'o'], ['ห้องน้ำหญิง','',.6,'w']],
+                    [S_, ['641','6/3'], ['643','6/5'], ['645','6/7'], ['647','6/9'], ['649','6/11'], S_]);
 // อาคาร 5 ชั้น 4–9 (เรียงเหนือ → ใต้)
 const B5 = {4:[['544','4/3'],['543','4/2'],['542','ไฮเทค',1,'o'],['541','ศิลปะ',1,'o']], 5:[['554','4/7'],['553','4/6'],['552','4/5'],['551','4/4']],
   6:[['564','4/11'],['563','4/10'],['562','4/9'],['561','4/8']], 7:[['574','3/7'],['573','3/6'],['572','3/5'],['571','3/4']],
@@ -347,10 +364,10 @@ function b2Plan(north, east){
   east.forEach((c, i) => { const h = (c[2] || 1)*eu; rooms.push(cellRoom(c, EX, y+1, EW, h-2, 'e'+i)); y += h; });
   return {w:W, h:H, fs:18, rooms, notes:[{t:'ระเบียงทางเดิน', x:290, y:100}, {t:'ระเบียง', x:560, y:260, rot:1}]};
 }
-PLANS.b2f1 = b2Plan([S_, ['ห้องราชพฤกษ์','',4,'o'], ['ศูนย์โสตฯ','',2,'o'], ['','',1.4,'s']], [['ห้องพยาบาล','',1,'o']]);
-PLANS.b2f2 = b2Plan([S_, ['ญี่ปุ่น','',1,'o'], ['225','โสต ตปท.',1.4], ['224','ตปท.',1.4], ['223','แนะแนว',1.4,'o'], WC, ['','',.8,'s']], [['222','โสต ม.'], ['พักครู','',.6,'o'], ['พักครู','',.6,'o']]);
-PLANS.b2f3 = b2Plan([S_, ['โสต','',.5,'o'], ['236','2/8'], ['235','2/8'], ['234','โสต ตปท.'], ['233','โสต ตปท.'], WC, ['','',.8,'s']], [['232','2/8'], ['231','2/7']]);
-PLANS.b2f4 = b2Plan([S_, ['โสต','',.5,'o'], ['246','2/6'], ['245','2/5'], ['244','2/4'], ['243','1/3'], WC, ['','',.8,'s']], [['242','2/3'], ['241','3/3']]);
+PLANS.b2f1 = b2Plan([SA, ['ห้องราชพฤกษ์','',3,'o'], ['ศูนย์เทคโนโลยี','',2,'o']], [['ห้องพักครูพละ','',1,'o'], SB]);
+PLANS.b2f2 = b2Plan([SA, ['พักครูต่างประเทศ 1','',1.3,'o'], ['226',''], ['225',''], ['พักครูต่างประเทศ 2','',1.3,'o'], ['พักครูแนะแนว','',1.1,'o']], [['222',''], ['221',''], SB]);
+PLANS.b2f3 = b2Plan([SA, ['236',''], ['235',''], ['234',''], ['233','']], [['232',''], ['231',''], SB]);
+PLANS.b2f4 = b2Plan([SA, ['246',''], ['245',''], ['244',''], ['243','']], [['242',''], ['241',''], SB]);
 
 const EVENTS = [
   {g:'แข่งขันหุ่นยนต์ — สนามแข่ง อาคาร 5 ชั้น 3 และอาคารโดม • ห้องพักผู้แข่งขัน อาคาร 3 ชั้น 3', items:[
@@ -1857,7 +1874,9 @@ function showDetail(){
   const el = document.getElementById('detail'); if (!el) return;
   const d = B[sel.b].def, inf = d.info?.[sel.f], r = sel.room && PLANS[inf.plan].rooms.find(q => q.id === sel.room);
   if (!r || !r.ev){ el.classList.remove('show'); return; }
-  el.innerHTML = `<b>${esc(r.ev)}</b><small>${esc(d.name)} ชั้น ${sel.f} · ${esc(r.t)}</small>`;
+  const evl = typeof evacLine === 'function' ? evacLine(sel.b === '8c' || sel.b === '8d' ? '' : sel.b, sel.f, r.id) : '';
+  el.innerHTML = `<b>${esc(r.ev)}</b><small>${esc(d.name)} ชั้น ${sel.f} · ${esc(r.t)}</small>${evl ? `<div class="evl">${esc(evl)}</div>` : ''}`;
+  if (evl){ showRoutes(sel.b); highlightRoute(sel.b, roomRoute(sel.b, sel.f, r.id)); }
   el.style.borderLeftColor = r.fill || 'var(--accent)';
   el.classList.add('show');
 }
@@ -1872,6 +1891,12 @@ function renderPanel(){
   } else panel.scrollTop = 0;
 }
 
+panel.addEventListener('input', e => {
+  if (e.target.id !== 'rq') return;
+  const res = findRooms(e.target.value), box = document.getElementById('rres');
+  box.innerHTML = e.target.value.trim() && !res.length ? '<small>ไม่พบห้อง</small>' :
+    res.map(({bid, f, r}) => `<button data-room="${bid}|${f}|${esc(r.id)}">${esc(r.t)}${r.t2 ? ' · ' + esc(/^\d+\/\d+$/.test(r.t2) ? 'ม.' + r.t2 : r.t2) : ''} <em>อาคาร ${bid} ชั้น ${f}</em></button>`).join('');
+});
 panel.addEventListener('click', e => {
   const t = e.target.closest('button, g.room');
   if (!t) return;
@@ -1880,6 +1905,8 @@ panel.addEventListener('click', e => {
   if (t.dataset.ff){ FIRE.f = +t.dataset.ff; if (FIRE.on) startFire(); else renderPanel(); return; }
   if (t.dataset.fgo){ startFire(); return; }
   if (t.dataset.fstop){ stopFire(); return; }
+  if (t.dataset.room){ const [b, f, id] = t.dataset.room.split('|'); focusRoom(b, +f, id); panel.scrollTop = 0; return; }
+  if (t.dataset.clearroom){ emShow(roomFocus ? roomFocus.bid : null); return; }
   if (t.dataset.em !== undefined){ emShow(t.dataset.em || null); return; }
   if (t.dataset.ap){ const a = APS[t.dataset.ap]; flyTo(new THREE.Vector3(px(a.x), 0, pz(a.y)), 70, .8); return; }
   if (t.classList.contains('back')){ select(null); return; }
@@ -1903,12 +1930,12 @@ const APS = {
 };
 // ทุกอาคาร : แบ่งครึ่งแยกกันหนี 2 ทาง โดยลงบันได 2 ฝั่ง (เส้นทางเป็นพิกัดผัง)
 const EVAC = {
-  '1':{ap:'A', t:'ลงบันไดหัว–ท้ายอาคาร ออกด้านหน้าอาคาร ไปรวมพลที่ถนนหน้าอาคาร 1', r:[
+  '1':{ap:'A', t:'ห้อง 141–143, 131–133, การเงิน ผอ. วิชาการ ลงบันไดฝั่งซ้าย · ห้อง 144–146, 134–136, วัดผล บุคคล พัสดุ ลงบันไดฝั่งขวา', r:[
         [[910,355],[912,372],[975,378]], [[1095,355],[1102,374],[975,378]]]},
-  '2':{ap:'C', t:'ฝั่งตะวันออกลงปลายปีกตะวันออก อ้อมอาคาร 7 และอาคาร 1 · ฝั่งตะวันตกผ่านลานโดม แล้วไปหน้าประตูโรงเรียน', r:[
+  '2':{ap:'C', t:'ห้องลำดับ 1–4 (ฝั่งตะวันตก) ใช้บันได A · ห้องลำดับ 5–8 (ปีกตะวันออก) ใช้บันได B แล้วไปหน้าประตูโรงเรียน', r:[
         [[1018,226],[1018,242],[1108,242],[1108,374],[975,378],[975,548],[972,548]],
         [[875,162],[895,172],[885,303],[885,392],[897,400],[897,521],[960,524],[972,548]]]},
-  '3':{ap:'C', t:'ลงบันได 2 ฝั่ง ข้ามลานโดม ผ่านระหว่างอาคาร 4 กับอาคาร 1 ไปหน้าประตูโรงเรียน', r:[
+  '3':{ap:'C', t:'ห้อง 335 334 333 ใช้บันได A · ห้อง 332 ห้องโครงงาน 331 ใช้บันได B (ทุกชั้นแบ่งแบบเดียวกัน) ข้ามลานโดมไปหน้าประตูโรงเรียน', r:[
         [[712,162],[752,172],[860,300],[885,305],[885,392],[897,400],[897,521],[960,524],[972,548]],
         [[864,162],[880,175],[885,305]]]},
   '4':{ap:'C', t:'ลงบันได 2 ฝั่ง ไปทางตะวันออก ผ่านถนนวนหลังอาคาร 6 ไปหน้าประตูโรงเรียน', r:[
@@ -1917,7 +1944,7 @@ const EVAC = {
   '5':{ap:'C', t:'ลงบันไดฝั่งเหนือและฝั่งใต้ ข้ามลานโดม ไปหน้าประตูโรงเรียน', r:[
         [[720,170],[752,176],[860,298],[885,305],[885,392],[897,400],[897,521],[960,524],[972,548]],
         [[720,298],[750,302],[860,302],[885,305]]]},
-  '6':{ap:'C', t:'ฝั่งเหนือลงบันไดออกถนนหน้าอาคาร · ฝั่งใต้ลงบันไดออกหน้าอาคาร 9 แล้วไปหน้าประตูโรงเรียน', r:[
+  '6':{ap:'C', t:'ห้องครึ่งเหนือใช้บันไดฝั่งเหนือ · ห้องครึ่งใต้ใช้บันไดฝั่งใต้ แล้วไปหน้าประตูโรงเรียน', r:[
         [[928,402],[928,393],[968,393],[975,405],[975,540],[972,548]],
         [[928,513],[928,524],[960,524],[972,548]]]},
   '7':{ap:'B', t:'ลงบันไดหัว–ท้ายอาคาร มารวมกันที่ลานใต้หลังคาระหว่างอาคาร 1 กับ 7', r:[
@@ -1975,6 +2002,7 @@ function showRoutes(id, none){
 }
 function emShow(id, fly=true){
   emSel = id && EVAC[id] ? id : null;
+  roomFocus = null; HLG.clear();
   showRoutes(emSel);
   sel = {b: emSel, f:null, room:null};
   if (emSel === '8') sel.b = '8';
@@ -1993,18 +2021,121 @@ function emShow(id, fly=true){
   stopSpin();
 }
 function emHTML(){
-  let h = fireHTML() + `<div class="rule"><b>หลักการอพยพ</b>แบ่งครึ่งแยกกันหนีเป็น 2 ทาง โดยลงบันได 2 ฝั่ง แล้วเดินตามเส้นสีแดงไปยังจุดรวมพล</div>`;
+  let h = `<div class="rsearch"><input id="rq" type="search" placeholder="🔍 ค้นหาห้อง เช่น 334, 631, ม.5/6, การเงิน" autocomplete="off"><div id="rres"></div></div>` + roomFocusHTML() + fireHTML() + `<div class="rule"><b>หลักการอพยพ</b>แบ่งครึ่งแยกกันหนีเป็น 2 ทาง โดยลงบันได 2 ฝั่ง แล้วเดินตามเส้นสีแดงไปยังจุดรวมพล</div>`;
   h += `<button class="evall" data-em="">แสดงเส้นทางหนีไฟทุกอาคาร</button>`;
   for (const id of Object.keys(EVAC)){
     const e = EVAC[id], ap = APS[e.ap];
     h += `<button class="evb ${emSel === id ? 'on' : ''}" data-em="${id}"><span class="num">${id}</span><span><b>แผนการหนี อาคาร ${id}</b><small>${esc(e.t)}</small><span class="to">→ ${esc(ap.n)} · ${esc(ap.d)}</span></span></button>`;
+    if (emSel === id) h += roomTableHTML(id);
   }
   h += `<div class="aps"><b>จุดรวมพล</b>`;
   for (const k in APS) h += `<div><i></i><button class="back" style="margin:0;color:var(--ink)" data-ap="${k}">${esc(APS[k].n)} — ${esc(APS[k].d)}</button></div>`;
   return h + `</div>`;
 }
+
+/* ================= แผนอพยพรายห้อง ================= */
+// ชื่อบันได เรียงตามลำดับเส้นทาง EVAC[id].r ; first = ดัชนีเส้นทางของบันไดฝั่งตะวันตก/เหนือ
+const EVR = {
+  '1':{names:['บันไดฝั่งซ้าย (ตะวันตก)','บันไดฝั่งขวา (ตะวันออก)'], first:0,
+       map:{'141':0,'142':0,'143':0,'131':0,'132':0,'133':0,'การเงิน':0,'ผอ.':0,'วิชาการ':0,'144':1,'145':1,'146':1,'134':1,'135':1,'136':1,'วัดผล':1,'บุคคล':1,'พัสดุ':1}},
+  '2':{names:['บันได B (ปลายปีกตะวันออก)','บันได A (ปลายฝั่งตะวันตก)'], first:1,
+       map:{'246':1,'245':1,'244':1,'236':1,'235':1,'234':1,'พักครูต่างประเทศ 1':1,'226':1,'225':1,'ห้องราชพฤกษ์':1,
+            '243':0,'242':0,'241':0,'233':0,'232':0,'231':0,'พักครูต่างประเทศ 2':0,'พักครูแนะแนว':0,'222':0,'221':0,'ศูนย์เทคโนโลยี':0,'ห้องพักครูพละ':0}},
+  '3':{names:['บันได A (ฝั่งตะวันตก)','บันได B (ฝั่งตะวันออก)'], first:0,
+       map:{'335':0,'334':0,'333':0,'อุปกรณ์วิทยาศาสตร์':0,'324':0,'323':0,'พักครูวิทยาศาสตร์':0,'313':0,'332':1,'ห้องโครงงาน':1,'331':1,'322':1,'321':1,'312':1,'311':1}},
+  '4':{names:['บันไดฝั่งตะวันตก','บันไดฝั่งตะวันออก'], first:0},
+  '5':{names:['บันไดฝั่งเหนือ','บันไดฝั่งใต้'], first:0},
+  '6':{names:['บันไดฝั่งเหนือ','บันไดฝั่งใต้'], first:0,
+       map:{'631':0,'633':0,'635':0,'632':0,'634':0,'637':1,'639':1,'636':1,'638':1,'630':1,
+            '641':0,'643':0,'645':0,'642':0,'644':0,'647':1,'649':1,'646':1,'648':1,'640':1}},
+  '7':{names:['บันไดฝั่งตะวันตก','บันไดฝั่งตะวันออก'], first:0},
+  '8':{names:['ประตูฝั่งเหนือ','ประตูฝั่งใต้'], first:0},
+};
+const planOf = (bid, f) => { const inf = B[bid]?.def.info?.[f]; return inf && PLANS[inf.plan]; };
+function roomRoute(bid, f, id){
+  const e = EVR[bid]; if (!e) return 0;
+  if (e.map && e.map[id] !== undefined) return e.map[id];
+  const plan = planOf(bid, f), r = plan && plan.rooms.find(q => q.id === id); if (!r) return 0;
+  const hz = plan.w >= plan.h, c = q => hz ? q.x + q.w/2 : q.y + q.h/2;
+  const st = plan.rooms.filter(q => q.ghost && /บันได/.test(q.t)).sort((a, b) => c(a) - c(b));
+  let k;
+  if (st.length >= 2){ const d0 = Math.abs(c(r) - c(st[0])), d1 = Math.abs(c(r) - c(st[st.length-1])); k = d0 <= d1 ? 0 : 1; }
+  else k = c(r) < (hz ? plan.w : plan.h)/2 ? 0 : 1;
+  return k === 0 ? e.first : 1 - e.first;
+}
+function evRooms(bid){        // [{f, groups:[[rooms→route0],[rooms→route1]]}] เรียงชั้นบนลงล่าง
+  const d = B[bid]?.def, out = []; if (!d?.info) return out;
+  for (const f of Object.keys(d.info).map(Number).sort((a, b) => b - a)){
+    const plan = planOf(bid, f); if (!plan) continue;
+    const g = [[], []];
+    for (const r of plan.rooms) if (r.ev && !/^(stage|wt|D1|reg|A\d|B\d|C\d|E\d|p13|p46)/.test(r.id)) g[roomRoute(bid, f, r.id)].push(r);
+    if (g[0].length + g[1].length) out.push({f, g});
+  }
+  return out;
+}
+// เส้นทางเน้น (สีเหลือง) ของห้องที่เลือก
+const HLG = new THREE.Group(); scene.add(HLG);
+const HLM = new THREE.MeshBasicMaterial({color:'#facc15', depthTest:false, transparent:true, opacity:.95});
+function highlightRoute(bid, idx){
+  HLG.clear(); if (!bid || !RPATH[bid]) return;
+  const path = RPATH[bid][idx] || RPATH[bid][0];
+  for (const c of path.curves){
+    const a = c.v1.clone(), b = c.v2.clone(); a.y = b.y = .75; const len = a.distanceTo(b); if (len < .01) continue;
+    const m = new THREE.Mesh(new THREE.BoxGeometry(2, .14, len + 2), HLM); m.position.copy(a).add(b).multiplyScalar(.5);
+    m.rotation.y = Math.atan2(b.x - a.x, b.z - a.z); m.renderOrder = 13; HLG.add(m);
+  }
+  const p0 = path.getPointAt(0), ring = new THREE.Mesh(new THREE.RingGeometry(1.8, 2.6, 32), new THREE.MeshBasicMaterial({color:'#facc15', depthTest:false, transparent:true, side:THREE.DoubleSide}));
+  ring.rotation.x = -Math.PI/2; ring.position.set(p0.x, .9, p0.z); ring.renderOrder = 14; HLG.add(ring);
+}
+let roomFocus = null;
+function evacLine(bid, f, id){
+  const e = EVR[bid]; if (!e || !EVAC[bid]) return '';
+  const k = roomRoute(bid, f, id), ap = APS[EVAC[bid].ap];
+  return `🚪 อพยพ: ลง${e.names[k]} → ${ap.n} (${ap.d})`;
+}
+function focusRoom(bid, f, id){
+  emSel = bid; showRoutes(bid);
+  const k = roomRoute(bid, f, id); highlightRoute(bid, k);
+  roomFocus = {bid, f, id, k};
+  sel = {b:bid, f, room:id}; applyState(); updatePin();
+  const pts = EVAC[bid].r.flat(); let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  for (const [x,y] of pts){ x0=Math.min(x0,x); x1=Math.max(x1,x); y0=Math.min(y0,y); y1=Math.max(y1,y); }
+  flyTo(new THREE.Vector3(px((x0+x1)/2), (f-.5)*(B[bid].fh||FH)*.5, pz((y0+y1)/2)), (Math.max((x1-x0)*S, (y1-y0)*S, 30)*1.6 + 55)*aspectK(), .82);
+  renderPanel();
+}
+function findRooms(q){
+  q = q.trim().toLowerCase(); if (!q) return [];
+  const out = [];
+  for (const bid in EVR) for (const {f, g} of evRooms(bid)) for (const r of g.flat()){
+    const hay = (r.t + ' ' + (r.t2 || '') + ' ' + (r.ev || '')).toLowerCase();
+    if (hay.includes(q)) out.push({bid, f, r});
+  }
+  return out.slice(0, 12);
+}
+function roomFocusHTML(){
+  if (!roomFocus) return '';
+  const {bid, f, id, k} = roomFocus, r = planOf(bid, f)?.rooms.find(q => q.id === id); if (!r) return '';
+  const ap = APS[EVAC[bid].ap];
+  return `<div class="rcard"><small>ห้องที่เลือก</small><b>${esc(r.t)}${r.t2 ? ' · ' + esc(/^\d+\/\d+$/.test(r.t2) ? 'ม.' + r.t2 : r.t2) : ''}</b>
+    <div>อาคาร ${bid} ชั้น ${f}</div><div class="go1">① ลง <b>${esc(EVR[bid].names[k])}</b></div><div class="go1">② เดินตามเส้นสีเหลือง/แดง ไป <b>${esc(ap.n)}</b> · ${esc(ap.d)}</div>
+    <button class="back" data-clearroom="1" style="margin:6px 0 0">✕ ล้างการเลือกห้อง</button></div>`;
+}
+function roomTableHTML(bid){
+  const e = EVR[bid], rows = evRooms(bid); if (!e || !rows.length) return '';
+  let h = `<div class="rtab"><b>แผนอพยพรายห้อง อาคาร ${bid}</b><small>แตะห้องเพื่อดูเส้นทางของห้องนั้น</small>`;
+  h += `<div class="rhead"><span>⬅ ${esc(e.names[e.first])}</span><span>${esc(e.names[1 - e.first])} ➡</span></div>`;
+  for (const {f, g} of rows){
+    h += `<div class="rrow"><div class="rf">ชั้น ${f}</div>`;
+    for (const k of [e.first, 1 - e.first]){
+      h += `<div class="rcol">` + g[k].map(r => `<button data-room="${bid}|${f}|${esc(r.id)}" class="${roomFocus && roomFocus.bid === bid && roomFocus.f === f && roomFocus.id === r.id ? 'on' : ''}" title="${esc(r.ev)}">${esc(r.t)}${r.t2 && /^\d+\/\d+$/.test(r.t2) ? `<i>ม.${esc(r.t2)}</i>` : ''}</button>`).join('') + `</div>`;
+    }
+    h += `</div>`;
+  }
+  return h + `</div>`;
+}
 (function evLoop(now){
   const t = now/1000;
+  for (const m of HLG.children) if (m.material === HLM) m.material.opacity = .6 + .35*Math.sin(t*5);
   for (const mv of MOVERS){
     if (!mv.grp.visible) continue;
     const u = (mv.off + t*mv.speed) % 1, p = mv.path.getPointAt(u), q = mv.path.getPointAt(Math.min(.999, u + .002));
