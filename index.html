@@ -1318,16 +1318,17 @@ TOILETS.forEach(r => {
   // ตราโรงเรียนทรงใบเสมาด้านบน
   const emb = new THREE.Shape(); emb.moveTo(-1.1, 0); emb.quadraticCurveTo(-1.3, 1.6, 0, 2.7); emb.quadraticCurveTo(1.3, 1.6, 1.1, 0); emb.closePath();
   const eg = new THREE.ExtrudeGeometry(emb, {depth:.2, bevelEnabled:false}); eg.translate(0, 0, -.1);
-  put(eg, sm('#2e4a86'), bx, 1.15+bh+.15, ZF+.15);
+  put(eg, sm('#15181c'), bx, 1.15+bh+.15, ZF+.15);
   const em = new THREE.Mesh(new THREE.CircleGeometry(.75, 32), emblemMat()); em.position.set(bx, 1.15+bh+1.25, ZF+.27); scene.add(em);
-  // แผ่นคำขวัญหินแกรนิต
-  const motto = canvasTex(512, 256, (g, w, h) => { g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#d9b860';
-    g.font = '700 46px Sarabun, sans-serif'; g.fillText('ปัญญาเป็นเครื่องเพิ่มพูน', w/2, h*.38); g.fillText('เกียรติคุณและชื่อเสียง', w/2, h*.66); });
-  put(new THREE.BoxGeometry(4, 2.6, .3), sm('#22262c', {roughness:.25, metalness:.3}), scx + SW/2 - 6.5, 2.4, ZF+.1);
-  put(new THREE.PlaneGeometry(3.8, 1.9), new THREE.MeshBasicMaterial({map:motto, transparent:true}), scx + SW/2 - 6.5, 2.4, ZF+.26);
-  // จอ LED บนโครงเหล็กด้านหลัง
-  for (const dx of [-1.6, 1.6]) put(new THREE.BoxGeometry(.25, 6, .25), sm('#e7ebee'), scx + SW/2 - 6.5 + dx, 3, ZF - 2);
-  put(new THREE.BoxGeometry(5.5, 3.2, .3), sm('#3b4250', {roughness:.3, metalness:.4}), scx + SW/2 - 6.5, 7.2, ZF - 2);
+  // ป้ายคำขวัญสีดำ 2 ข้าง + เสาฟ้า + บันไดหน้าป้าย (ตามภาพ)
+  const plaque = (txt1, txt2) => canvasTex(512, 300, (g, w, h) => { g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#d9b860';
+    g.font = '700 50px Sarabun, sans-serif'; g.fillText(txt1, w/2, h*.38); g.fillText(txt2, w/2, h*.66); });
+  for (const [dx, t1, t2] of [[-SW/2+2.2, 'ปัญญาเป็นเครื่องเพิ่มพูน', 'เกียรติคุณและชื่อเสียง'], [SW/2-2.2, 'ปญฺญา กิตฺติสิ', 'โลกวฑฺฒนี']]){
+    put(new THREE.BoxGeometry(4, 2.4, .35), sm('#15181c', {roughness:.25, metalness:.3}), scx+dx, 2.3, ZF+.35);
+    put(new THREE.PlaneGeometry(3.7, 2.15), new THREE.MeshBasicMaterial({map:plaque(t1, t2), transparent:true}), scx+dx, 2.3, ZF+.54);
+    put(ext([[-.8,0],[.8,0],[.8,5.2],[0,6.2],[-.8,5.2]], .9), sm('#a9dde4'), scx+dx + (dx < 0 ? -2.6 : 2.6), 0, ZF+.1);
+  }
+  for (let k = 0; k < 3; k++) put(new THREE.BoxGeometry(SW - 2 - k*2.4, .25, 1.2), sm('#dfe4e6'), scx, 1.22 + k*.25, ZF + 1.4 - k*.35);
   // ศาลพระภูมิสีทอง (หลังรั้ว ข้างประตู)
   const GOLD = sm('#d9b23a', {metalness:.65, roughness:.3});
   const spx = gL - 5, spz = ZF - 4;
@@ -1337,6 +1338,18 @@ TOILETS.forEach(r => {
   put(new THREE.BoxGeometry(1.1, 1.1, 1.1), GOLD, spx, 2.85, spz);
   for (let k = 0; k < 3; k++) put(new THREE.ConeGeometry(.9 - k*.22, .7, 4), GOLD, spx, 3.7 + k*.55, spz, Math.PI/4);
   put(new THREE.ConeGeometry(.12, 1.1, 8), GOLD, spx, 5.6, spz);
+  // บันไดขึ้นแท่นศาลพระภูมิ + ราวจับหัวทอง
+  for (let k = 0; k < 4; k++) put(new THREE.BoxGeometry(3, .2, .5), sm('#ece6d3'), spx, .1 + k*.2, spz + 2.2 - k*.45);
+  for (const sx of [-1.5, 1.5]){ put(new THREE.BoxGeometry(.06, .06, 2.2), sm('#9aa3ab', {metalness:.6}), spx+sx, 1.4, spz + 1.5);
+    put(new THREE.SphereGeometry(.09, 10, 8), GOLD, spx+sx, 1.45, spz + 2.6); }
+  // เต็นท์ป้อมยามสีขาว + โต๊ะ เก้าอี้
+  const tx = gL + 4, tz = ZF - 5, TW = sm('#f4f6f5');
+  for (const sx of [-1.4, 1.4]) for (const sz of [-1.1, 1.1]) put(new THREE.BoxGeometry(.1, 2.5, .1), TW, tx+sx, 1.25, tz+sz);
+  put(new THREE.BoxGeometry(3.2, .12, 2.6), TW, tx, 2.55, tz);
+  put(new THREE.BoxGeometry(1.8, .06, .8), sm('#ffffff'), tx, .78, tz+.3);
+  for (const sx of [-.8, .8]) put(new THREE.BoxGeometry(.05, .75, .05), sm('#222'), tx+sx, .4, tz+.3);
+  put(new THREE.BoxGeometry(.6, .1, .6), sm('#1c1f22'), tx, .5, tz-.4); put(new THREE.BoxGeometry(.6, .8, .1), sm('#1c1f22'), tx, .9, tz-.7);
+  label('ป้อมยาม', 'flag', new THREE.Vector3(tx, 3.6, tz));
   label('ป้ายโรงเรียน', 'flag', new THREE.Vector3(bx, 8.5, ZF));
 })();
 
